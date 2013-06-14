@@ -47,7 +47,7 @@ extern zend_module_entry yii_module_entry;
 #define YII_SHUTDOWN_FUNCTION(module)  	ZEND_MINIT_FUNCTION(yii_##module)
 #define YII_SHUTDOWN(module)	 	    ZEND_MODULE_SHUTDOWN_N(yii_##module)(INIT_FUNC_ARGS_PASSTHRU)
 
-#if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION > 2)) || (PHP_MAJOR_VERSION > 5)
+#if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION == 2)) || (PHP_MAJOR_VERSION > 5)
 #define Z_SET_REFCOUNT_P(pz, rc)      (pz)->refcount = rc
 #define Z_SET_REFCOUNT_PP(ppz, rc)    Z_SET_REFCOUNT_P(*(ppz), rc)
 #define Z_ADDREF_P 	 ZVAL_ADDREF
@@ -64,7 +64,10 @@ extern PHPAPI void php_debug_zval_dump(zval **struc, int level TSRMLS_DC);
 
 ZEND_BEGIN_MODULE_GLOBALS(yii)
 	char 		*ext;
+	char 		*directory;
 	zend_bool 	lowcase_path;
+	zend_bool  	autoload_started;
+	zend_bool  	running;
 	long		forward_limit;
 	HashTable	*configs;
 	zval 		*modules;

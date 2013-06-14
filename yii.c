@@ -25,7 +25,13 @@
 #include "ext/standard/info.h"
 #include "ext/standard/php_string.h"
 
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
 #include "php_yii.h"
+
+#define MICRO_IN_SEC 1000000.00
 
 ZEND_DECLARE_MODULE_GLOBALS(yii);
 
@@ -39,8 +45,7 @@ zend_function_entry yii_functions[] = {
 /** {{{ PHP_INI_MH(OnUpdateSeparator)
  */
 PHP_INI_MH(OnUpdateSeparator) {
-	YII_G(name_separator) = new_value; 
-	YII_G(name_separator_len) = new_value_length;
+	YII_G(ext) = new_value; 
 	return SUCCESS;
 }
 /* }}} */
@@ -66,7 +71,7 @@ PHP_MINIT_FUNCTION(yii)
 {
 	REGISTER_INI_ENTRIES();
 
-		REGISTER_STRINGL_CONSTANT("YII_VERSION", YII_VERSION, 	sizeof(YII_VERSION) - 1, 	CONST_PERSISTENT | CONST_CS);
+	REGISTER_STRINGL_CONSTANT("YII_VERSION", YII_VERSION, 	sizeof(YII_VERSION) - 1, 	CONST_PERSISTENT | CONST_CS);
 
 	/* startup components */
 	/* YII_STARTUP(application); */
@@ -101,6 +106,18 @@ PHP_RINIT_FUNCTION(yii)
 	YII_G(buf_nesting)		= 0;
 #endif
 
+	zval *fooval;
+	struct timeval tp = {0};
+	MAKE_STD_ZVAL(fooval);
+	if (gettimeofday(&tp, NULL)) {
+		ZVAL_STRING(fooval, "error", 1);	
+	} else {
+		ZVAL_DOUBLE(fooval, (double)(tp.tv_sec + tp.tv_usec / MICRO_IN_SEC));
+	}
+	ZEND_SET_SYMBOL( EG(active_symbol_table) ,  "runtime" , fooval);
+
+	REGISTER_DOUBLE_CONSTANT("YII_BEGIN_TIME", (double)(tp.tv_sec + tp.tv_usec / MICRO_IN_SEC) ,CONST_CS);
+
 	return SUCCESS;
 }
 /* }}} */
@@ -124,7 +141,7 @@ PHP_MINFO_FUNCTION(yii)
 	php_info_print_table_start();
 	php_info_print_table_header(2, "yii support", "enabled");
 	php_info_print_table_row(2, "Version", YII_VERSION);
-	php_info_print_table_row(2, "Supports", YII_SUPPORT_URL);
+	//php_info_print_table_row(2, "Supports", YII_SUPPORT_URL);
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();

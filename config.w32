@@ -1,4 +1,4 @@
-// $Id: config.w32 765 2010-10-21 13:04:03Z huixinchen $
+// $Id: config.w32 $
 // vim:ft=javascript
 
 ARG_ENABLE("yii", "enable yii support", "no");
