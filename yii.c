@@ -100,6 +100,7 @@ PHP_MSHUTDOWN_FUNCTION(yii)
 PHP_RINIT_FUNCTION(yii)
 {
 	YII_G(running)			= 0;
+	YII_G(directory)		= NULL;
 #if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4))
 	YII_G(buffer)			= NULL;
 	YII_G(owrite_handler)		= NULL;
