@@ -1,6 +1,6 @@
 /*
   +----------------------------------------------------------------------+
-  | Yii Framework                                                        |
+  | Yii Framework as PHP extension                                       |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -13,6 +13,8 @@
   | Author: Baoqiang Su  <zmrnet@qq.com>                                 |
   +----------------------------------------------------------------------+
 */
+
+/* $Id$ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -30,6 +32,7 @@
 #endif
 
 #include "php_yii.h"
+#include "yiibase.h"
 
 #define MICRO_IN_SEC 1000000.00
 

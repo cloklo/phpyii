@@ -1,10 +1,10 @@
 // $Id: config.w32 $
 // vim:ft=javascript
 
-ARG_ENABLE("yii", "enable yii support", "no");
+ARG_ENABLE("yii", "enable yii framework support", "no");
 
 if (PHP_YII == "yes") {
-	EXTENSION("yii", "yii.c");
+	EXTENSION("yii", "yii.c yiibase.c");
 
-	AC_DEFINE("HAVE_YII", 1, "Have Yii Support");
+	AC_DEFINE("HAVE_YII", 1, "Have Yii Framework Support");
 }

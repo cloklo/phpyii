@@ -1,6 +1,6 @@
 /*
   +----------------------------------------------------------------------+
-  | Yii Framework                                                        |
+  | Yii Framework as PHP extension                                       |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -13,6 +13,8 @@
   | Author: Baoqiang Su  <zmrnet@qq.com>                                 |
   +----------------------------------------------------------------------+
 */
+
+/* $Id$ */
 
 #ifndef PHP_YII_H
 #define PHP_YII_H
@@ -39,12 +41,12 @@ extern zend_module_entry yii_module_entry;
 #define YII_G(v) (yii_globals.v)
 #endif
 
-#define YII_VERSION 					"1.1.0"
+#define YII_VERSION 					"1.0.0"
 
 #define YII_STARTUP_FUNCTION(module)   	ZEND_MINIT_FUNCTION(yii_##module)
 #define YII_RINIT_FUNCTION(module)		ZEND_RINIT_FUNCTION(yii_##module)
 #define YII_STARTUP(module)	 		  	ZEND_MODULE_STARTUP_N(yii_##module)(INIT_FUNC_ARGS_PASSTHRU)
-#define YII_SHUTDOWN_FUNCTION(module)  	ZEND_MINIT_FUNCTION(yii_##module)
+#define YII_SHUTDOWN_FUNCTION(module)  	ZEND_MHUTDOWN_FUNCTION(yii_##module)
 #define YII_SHUTDOWN(module)	 	    ZEND_MODULE_SHUTDOWN_N(yii_##module)(INIT_FUNC_ARGS_PASSTHRU)
 
 #if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION == 2)) || (PHP_MAJOR_VERSION > 5)

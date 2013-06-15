@@ -1,8 +1,8 @@
-PHP_ARG_ENABLE(yii, whether to enable yii support,
-[  --enable-yii           Enable yii support])
+PHP_ARG_ENABLE(yii, whether to enable yii framework support,
+[  --enable-yii           Enable yii framework support])
 
 AC_ARG_ENABLE(yii-debug,
-[  --enable-yii-debug     Enable yii debug mode default=no],
+[  --enable-yii-debug     Enable yii framework debug mode default=no],
 [PHP_YII_DEBUG=$enableval],
 [PHP_YII_DEBUG="no"])  
 
@@ -37,9 +37,11 @@ if test "$PHP_YII" != "no"; then
   yii_php_version=`expr [$]1 \* 1000000 + [$]2 \* 1000 + [$]3`
 
   if test "$yii_php_version" -le "5002000"; then
-    AC_MSG_ERROR([You need at least PHP 5.2.0 to be able to use this version of Yii. PHP $php_version found])
+    AC_MSG_ERROR([You need at least PHP 5.2.0 to be able to use this version of Yii Framework. PHP $php_version found])
   else
     AC_MSG_RESULT([$php_version, ok])
   fi
-  PHP_NEW_EXTENSION(yii, yii.c, $ext_shared)
+  PHP_NEW_EXTENSION(yii, yii.c \
+    yiibase.c \
+    , $ext_shared)
 fi
