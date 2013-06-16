@@ -70,6 +70,13 @@ PHP_INI_BEGIN()
 PHP_INI_END();
 /* }}} */
 
+/** {{{ yii_methods
+*/
+zend_function_entry yii_methods[] = {
+	{NULL, NULL, NULL}
+};
+/* }}} */
+
 /** {{{ PHP_MINIT_FUNCTION
 */
 PHP_MINIT_FUNCTION(yii)
@@ -80,6 +87,10 @@ PHP_MINIT_FUNCTION(yii)
 
 	/* startup components */
 	/* YII_STARTUP(application); */
+
+	zend_class_entry ce;
+	INIT_CLASS_ENTRY(ce, "Yii", yii_methods);
+	yii_ce = zend_register_internal_class_ex(&ce, yiibase_ce, NULL TSRMLS_CC);
 
 	return SUCCESS;
 }
@@ -200,23 +211,6 @@ zend_module_entry yii_module_entry = {
 
 
 
-/** {{{ yii_methods
-*/
-zend_function_entry yii_methods[] = {
-	{NULL, NULL, NULL}
-};
-/* }}} */
-
-/** {{{ ZEND_MINIT_FUNCTION
-*/
-ZEND_MINIT_FUNCTION(yii) {
-	zend_class_entry ce;
-	INIT_CLASS_ENTRY(ce, "Yii", yii_methods);
-	yii_ce = zend_register_internal_class_ex(&ce, yiibase_ce, NULL TSRMLS_CC);
-
-	return SUCCESS;
-}
-/* }}} */
 
 /*
  * Local variables:
