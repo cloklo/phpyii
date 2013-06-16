@@ -37,9 +37,9 @@ zend_function_entry yiibase_methods[] = {
 };
 /* }}} */
 
-/** {{{ ZEND_MINIT_FUNCTION
+/** {{{ PHP_MINIT_FUNCTION
 */
-ZEND_MINIT_FUNCTION(yiibase) {
+PHP_MINIT_FUNCTION(yiibase) {
 	zend_class_entry ce;
 	INIT_CLASS_ENTRY(ce, "YiiBase", yiibase_methods);
 
