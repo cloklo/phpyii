@@ -104,17 +104,12 @@ PHP_RINIT_FUNCTION(yii)
 	YII_G(buf_nesting)		= 0;
 #endif
 
-	zval *fooval;
 	struct timeval tp = {0};
-	MAKE_STD_ZVAL(fooval);
 	if (gettimeofday(&tp, NULL)) {
-		ZVAL_STRING(fooval, "error", 1);	
+		YII_G(begin_time)	= 0;	
 	} else {
-		ZVAL_DOUBLE(fooval, (double)(tp.tv_sec + tp.tv_usec / MICRO_IN_SEC));
+		YII_G(begin_time)	= (double)(tp.tv_sec + tp.tv_usec / MICRO_IN_SEC));
 	}
-	ZEND_SET_SYMBOL( EG(active_symbol_table) ,  "runtime" , fooval);
-
-	REGISTER_DOUBLE_CONSTANT("YII_BEGIN_TIME", (double)(tp.tv_sec + tp.tv_usec / MICRO_IN_SEC) ,CONST_CS);
 
 	return SUCCESS;
 }

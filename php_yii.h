@@ -65,6 +65,7 @@ extern PHPAPI void php_var_dump(zval **struc, int level TSRMLS_DC);
 extern PHPAPI void php_debug_zval_dump(zval **struc, int level TSRMLS_DC);
 
 ZEND_BEGIN_MODULE_GLOBALS(yii)
+	double		begin_time; 
 	char 		*ext;
 	char 		*directory;
 	zend_bool 	lowcase_path;

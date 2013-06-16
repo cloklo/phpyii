@@ -29,7 +29,6 @@
 
 zend_class_entry *yiibase_ce;
 
-
 /** {{{ yiibase_methods
 */
 zend_function_entry yiibase_methods[] = {
