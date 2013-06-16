@@ -24,6 +24,7 @@
 #include "php_ini.h"
 
 #include "php_yii.h"
+
 #include "yiibase.h"
 
 zend_class_entry *yiibase_ce;

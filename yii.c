@@ -55,14 +55,6 @@ PHP_INI_MH(OnUpdateSeparator) {
 }
 /* }}} */
 
-/** {{{ PHP_GINIT_FUNCTION
-*/
-PHP_GINIT_FUNCTION(yii)
-{
-	yii_globals->autoload_started   = 0;
-}
-/* }}} */
-
 /** {{{ PHP_INI
  */
 PHP_INI_BEGIN()
@@ -86,7 +78,7 @@ PHP_MINIT_FUNCTION(yii)
 	REGISTER_STRINGL_CONSTANT("YII_VERSION", YII_VERSION, 	sizeof(YII_VERSION) - 1, 	CONST_PERSISTENT | CONST_CS);
 
 	/* startup components */
-	/* YII_STARTUP(application); */
+	PHP_MINIT(yiibase)(INIT_FUNC_ARGS_PASSTHRU);
 
 	zend_class_entry ce;
 	INIT_CLASS_ENTRY(ce, "Yii", yii_methods);
@@ -133,7 +125,7 @@ PHP_RINIT_FUNCTION(yii)
 	}
 	ZEND_SET_SYMBOL( EG(active_symbol_table) ,  "runtime" , fooval);
 
-	REGISTER_DOUBLE_CONSTANT("YII_BEGIN_TIME", (double)(tp.tv_sec + tp.tv_usec / MICRO_IN_SEC) ,CONST_CS);
+	REGISTER_DOUBLE_CONSTANT("YII_BEGIN_TIME", (double)(time(NULL)) ,CONST_CS);
 
 	return SUCCESS;
 }
