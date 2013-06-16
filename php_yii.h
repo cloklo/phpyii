@@ -43,7 +43,7 @@ extern zend_module_entry yii_module_entry;
 
 #define YII_VERSION 					"1.0.0"
 
-#define YII_STARTUP_FUNCTION(module)   	ZEND_MINIT_FUNCTION(yii_##module)
+#define YII_MINIT_FUNCTION(module)   	ZEND_MINIT_FUNCTION(yii_##module)
 #define YII_RINIT_FUNCTION(module)		ZEND_RINIT_FUNCTION(yii_##module)
 #define YII_STARTUP(module)	 		  	ZEND_MODULE_STARTUP_N(yii_##module)(INIT_FUNC_ARGS_PASSTHRU)
 #define YII_SHUTDOWN_FUNCTION(module)  	ZEND_MHUTDOWN_FUNCTION(yii_##module)

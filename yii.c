@@ -36,6 +36,8 @@
 
 #define MICRO_IN_SEC 1000000.00
 
+zend_class_entry *yii_ce;
+
 ZEND_DECLARE_MODULE_GLOBALS(yii);
 
 /* {{{ yii_functions[]
@@ -194,6 +196,26 @@ zend_module_entry yii_module_entry = {
 	NULL,
 	STANDARD_MODULE_PROPERTIES_EX
 };
+/* }}} */
+
+
+
+/** {{{ yii_methods
+*/
+zend_function_entry yii_methods[] = {
+	{NULL, NULL, NULL}
+};
+/* }}} */
+
+/** {{{ ZEND_MINIT_FUNCTION
+*/
+ZEND_MINIT_FUNCTION(yii) {
+	zend_class_entry ce;
+	INIT_CLASS_ENTRY(ce, "Yii", yii_methods);
+	yii_ce = zend_register_internal_class_ex(&ce, yiibase_ce, NULL TSRMLS_CC);
+
+	return SUCCESS;
+}
 /* }}} */
 
 /*
