@@ -66,8 +66,6 @@ zend_function_entry yii_methods[] = {
 */
 PHP_MINIT_FUNCTION(yii)
 {
-	REGISTER_INI_ENTRIES();
-
 	REGISTER_STRINGL_CONSTANT("YII_VERSION", YII_VERSION, 	sizeof(YII_VERSION) - 1, 	CONST_PERSISTENT | CONST_CS);
 
 	/* startup components */
@@ -85,8 +83,6 @@ PHP_MINIT_FUNCTION(yii)
 */
 PHP_MSHUTDOWN_FUNCTION(yii)
 {
-	UNREGISTER_INI_ENTRIES();
-
 	if (YII_G(configs)) {
 		zend_hash_destroy(YII_G(configs));
 		pefree(YII_G(configs), 1);

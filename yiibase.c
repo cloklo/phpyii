@@ -42,6 +42,7 @@ zend_function_entry yiibase_methods[] = {
 PHP_MINIT_FUNCTION(yiibase) {
 	zend_class_entry ce;
 	INIT_CLASS_ENTRY(ce, "YiiBase", yiibase_methods);
+	yiibase_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
 	return SUCCESS;
 }
