@@ -21,6 +21,7 @@
 
 extern zend_class_entry * yiibase_ce;
 
+ZEND_MINIT_FUNCTION(yiibase);
 #endif
 /*
  * Local variables:

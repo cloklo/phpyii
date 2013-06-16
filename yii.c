@@ -209,9 +209,6 @@ zend_module_entry yii_module_entry = {
 };
 /* }}} */
 
-
-
-
 /*
  * Local variables:
  * tab-width: 4
