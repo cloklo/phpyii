@@ -19,7 +19,7 @@
 #ifndef PHP_YIIBASE_H
 #define PHP_YIIBASE_H
 
-extern zend_class_entry * yiibase_ce;
+extern zend_class_entry *yiibase_ce;
 
 PHP_MINIT_FUNCTION(yiibase);
 #endif

@@ -47,27 +47,12 @@ zend_function_entry yii_functions[] = {
 };
 /* }}} */
 
-/** {{{ PHP_INI_MH(OnUpdateSeparator)
- */
-PHP_INI_MH(OnUpdateSeparator) {
-	YII_G(ext) = new_value; 
-	return SUCCESS;
-}
-/* }}} */
-
 /** {{{ PHP_GINIT_FUNCTION
 */
 PHP_GINIT_FUNCTION(yii)
 {
 	yii_globals->autoload_started   = 0;
 }
-/* }}} */
-
-/** {{{ PHP_INI
- */
-PHP_INI_BEGIN()
-
-PHP_INI_END();
 /* }}} */
 
 /** {{{ yii_methods
