@@ -66,21 +66,17 @@ extern PHPAPI void php_debug_zval_dump(zval **struc, int level TSRMLS_DC);
 
 ZEND_BEGIN_MODULE_GLOBALS(yii)
 	double		begin_time; 
-	char 		*ext;
-	char 		*directory;
-	zend_bool 	lowcase_path;
-	zend_bool  	autoload_started;
-	zend_bool  	running;
-	long		forward_limit;
-	HashTable	*configs;
-	zval 		*modules;
+	zend_bool 	debug;
+	uint		trace_level;
+	zend_bool 	enable_exception_handler;
+	zend_bool 	enable_error_handler;
+	char 		*path;
+	char 		*zii_path;
 #if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4))
 	uint 		buf_nesting;
 	void		*buffer;
 	void 		*owrite_handler;
 #endif
-	zval        *ini_wanted_section;
-	uint        parsing_flag;
 ZEND_END_MODULE_GLOBALS(yii)
 
 PHP_MINIT_FUNCTION(yii);

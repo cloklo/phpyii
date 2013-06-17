@@ -51,7 +51,10 @@ zend_function_entry yii_functions[] = {
 */
 PHP_GINIT_FUNCTION(yii)
 {
-	yii_globals->autoload_started   = 0;
+	yii_globals->debug			= 0;
+	yii_globals->trace_level		= 0;
+	yii_globals->enable_exception_handler	= 1;
+	yii_globals->enable_error_handler	= 1;
 }
 /* }}} */
 
@@ -83,9 +86,14 @@ PHP_MINIT_FUNCTION(yii)
 */
 PHP_MSHUTDOWN_FUNCTION(yii)
 {
-	if (YII_G(configs)) {
-		zend_hash_destroy(YII_G(configs));
-		pefree(YII_G(configs), 1);
+	if (YII_G(path)) {
+		zend_hash_destroy(YII_G(path));
+		pefree(YII_G(path), 1);
+	}
+
+	if (YII_G(zii_path)) {
+		zend_hash_destroy(YII_G(zii_path));
+		pefree(YII_G(zii_path), 1);
 	}
 
 	return SUCCESS;
@@ -96,8 +104,8 @@ PHP_MSHUTDOWN_FUNCTION(yii)
 */
 PHP_RINIT_FUNCTION(yii)
 {
-	YII_G(running)			= 0;
-	YII_G(directory)		= NULL;
+	YII_G(path)			= NULL;
+	YII_G(zii_path)			= NULL;
 #if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4))
 	YII_G(buffer)			= NULL;
 	YII_G(owrite_handler)		= NULL;
@@ -108,7 +116,7 @@ PHP_RINIT_FUNCTION(yii)
 	if (gettimeofday(&tp, NULL)) {
 		YII_G(begin_time)	= 0;	
 	} else {
-		YII_G(begin_time)	= (double)(tp.tv_sec + tp.tv_usec / MICRO_IN_SEC));
+		YII_G(begin_time)	= (double)(tp.tv_sec + tp.tv_usec / MICRO_IN_SEC);
 	}
 
 	return SUCCESS;
@@ -119,8 +127,12 @@ PHP_RINIT_FUNCTION(yii)
 */
 PHP_RSHUTDOWN_FUNCTION(yii)
 {
-	if (YII_G(directory)) {
-		efree(YII_G(directory));
+	if (YII_G(path)) {
+		efree(YII_G(path));
+	}
+
+	if (YII_G(zii_path)) {
+		efree(YII_G(zii_path));
 	}
 
 	return SUCCESS;
