@@ -1,16 +1,16 @@
 /*
   +----------------------------------------------------------------------+
-  | Yii Framework as PHP extension                                       |
+  | Yii Framework as PHP extension										 |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.01 of the PHP license,      |
-  | that is bundled with this package in the file LICENSE, and is        |
-  | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_01.txt                                  |
-  | If you did not receive a copy of the PHP license and are unable to   |
-  | obtain it through the world-wide-web, please send a note to          |
-  | license@php.net so we can mail you a copy immediately.               |
+  | This source file is subject to version 3.01 of the PHP license,		 |
+  | that is bundled with this package in the file LICENSE, and is		 |
+  | available through the world-wide-web at the following url:			 |
+  | http://www.php.net/license/3_01.txt									 |
+  | If you did not receive a copy of the PHP license and are unable to	 |
+  | obtain it through the world-wide-web, please send a note to			 |
+  | license@php.net so we can mail you a copy immediately.				 |
   +----------------------------------------------------------------------+
-  | Author: Baoqiang Su  <zmrnet@qq.com>                                 |
+  | Author: Baoqiang Su  <zmrnet@qq.com>								 |
   +----------------------------------------------------------------------+
 */
 
@@ -69,7 +69,7 @@ PHP_GINIT_FUNCTION(yii)
 */
 PHP_MINIT_FUNCTION(yii)
 {
-	REGISTER_STRINGL_CONSTANT("YII_VERSION", YII_VERSION, 	sizeof(YII_VERSION) - 1, 	CONST_PERSISTENT | CONST_CS);
+	REGISTER_STRINGL_CONSTANT("YII_VERSION", YII_VERSION,	sizeof(YII_VERSION) - 1,	CONST_PERSISTENT | CONST_CS);
 
 	/* startup components */
 	PHP_MINIT(yiibase)(INIT_FUNC_ARGS_PASSTHRU);

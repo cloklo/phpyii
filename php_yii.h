@@ -1,16 +1,16 @@
 /*
   +----------------------------------------------------------------------+
-  | Yii Framework as PHP extension                                       |
+  | Yii Framework as PHP extension										 |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.01 of the PHP license,      |
-  | that is bundled with this package in the file LICENSE, and is        |
-  | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_01.txt                                  |
-  | If you did not receive a copy of the PHP license and are unable to   |
-  | obtain it through the world-wide-web, please send a note to          |
-  | license@php.net so we can mail you a copy immediately.               |
+  | This source file is subject to version 3.01 of the PHP license,		 |
+  | that is bundled with this package in the file LICENSE, and is		 |
+  | available through the world-wide-web at the following url:			 |
+  | http://www.php.net/license/3_01.txt									 |
+  | If you did not receive a copy of the PHP license and are unable to	 |
+  | obtain it through the world-wide-web, please send a note to			 |
+  | license@php.net so we can mail you a copy immediately.				 |
   +----------------------------------------------------------------------+
-  | Author: Baoqiang Su  <zmrnet@qq.com>                                 |
+  | Author: Baoqiang Su  <zmrnet@qq.com>								 |
   +----------------------------------------------------------------------+
 */
 
@@ -41,20 +41,20 @@ extern zend_module_entry yii_module_entry;
 #define YII_G(v) (yii_globals.v)
 #endif
 
-#define YII_VERSION 					"1.0.0"
+#define YII_VERSION						"1.0.0"
 
-#define YII_MINIT_FUNCTION(module)   	ZEND_MINIT_FUNCTION(yii_##module)
+#define YII_MINIT_FUNCTION(module)		ZEND_MINIT_FUNCTION(yii_##module)
 #define YII_RINIT_FUNCTION(module)		ZEND_RINIT_FUNCTION(yii_##module)
-#define YII_SHUTDOWN_FUNCTION(module)  	ZEND_MHUTDOWN_FUNCTION(yii_##module)
-#define YII_MODULE_STARTUP(module)	 	ZEND_MODULE_STARTUP_N(yii_##module)(INIT_FUNC_ARGS_PASSTHRU)
-#define YII_MODULE_SHUTDOWN(module)	 	ZEND_MODULE_SHUTDOWN_N(yii_##module)(INIT_FUNC_ARGS_PASSTHRU)
+#define YII_SHUTDOWN_FUNCTION(module)	ZEND_MHUTDOWN_FUNCTION(yii_##module)
+#define YII_MODULE_STARTUP(module)		ZEND_MODULE_STARTUP_N(yii_##module)(INIT_FUNC_ARGS_PASSTHRU)
+#define YII_MODULE_SHUTDOWN(module)		ZEND_MODULE_SHUTDOWN_N(yii_##module)(INIT_FUNC_ARGS_PASSTHRU)
 
 #if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION == 2)) || (PHP_MAJOR_VERSION > 5)
-#define Z_SET_REFCOUNT_P(pz, rc)      (pz)->refcount = rc
-#define Z_SET_REFCOUNT_PP(ppz, rc)    Z_SET_REFCOUNT_P(*(ppz), rc)
-#define Z_ADDREF_P 	 ZVAL_ADDREF
+#define Z_SET_REFCOUNT_P(pz, rc)	  (pz)->refcount = rc
+#define Z_SET_REFCOUNT_PP(ppz, rc)	  Z_SET_REFCOUNT_P(*(ppz), rc)
+#define Z_ADDREF_P	 ZVAL_ADDREF
 #define Z_REFCOUNT_P ZVAL_REFCOUNT
-#define Z_DELREF_P 	 ZVAL_DELREF
+#define Z_DELREF_P	 ZVAL_DELREF
 #endif
 
 #define yii_application_t	zval
@@ -66,16 +66,16 @@ extern PHPAPI void php_debug_zval_dump(zval **struc, int level TSRMLS_DC);
 
 ZEND_BEGIN_MODULE_GLOBALS(yii)
 	double		begin_time; 
-	zend_bool 	debug;
+	zend_bool	debug;
 	uint		trace_level;
-	zend_bool 	enable_exception_handler;
-	zend_bool 	enable_error_handler;
-	char 		*path;
-	char 		*zii_path;
+	zend_bool	enable_exception_handler;
+	zend_bool	enable_error_handler;
+	char		*path;
+	char		*zii_path;
 #if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4))
-	uint 		buf_nesting;
+	uint		buf_nesting;
 	void		*buffer;
-	void 		*owrite_handler;
+	void		*owrite_handler;
 #endif
 ZEND_END_MODULE_GLOBALS(yii)
 
