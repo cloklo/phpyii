@@ -181,7 +181,7 @@ PHP_METHOD(yiibase, setApplication) {
 /** {{{ proto public static YiiBase::getFrameworkPath(void)
 */
 PHP_METHOD(yiibase, getFrameworkPath) {
-  zend_hash_find(EG(zend_constants), ZEND_STRL("YII_PATH"), (void **) &return_value);
+  zend_get_constant, "YII_PATH", 8, &return_value TSRMLS_CC);
 }
 /* }}} */
 
@@ -318,7 +318,7 @@ PHP_MINIT_FUNCTION(yiibase) {
 	INIT_CLASS_ENTRY(ce, "YiiBase", yiibase_methods);
 	yiibase_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
-  zend_declare_property_null(yiibase_ce, ZEND_STRL(YIIBASE_PROPERTY_CLASSMAP), ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
+  //zend_declare_property_null(yiibase_ce, ZEND_STRL(YIIBASE_PROPERTY_CLASSMAP), ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
 
 	return SUCCESS;
 }
