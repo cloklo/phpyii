@@ -47,6 +47,13 @@ zend_function_entry yii_functions[] = {
 };
 /* }}} */
 
+/** {{{ yii_methods[]
+*/
+zend_function_entry yii_methods[] = {
+  {NULL, NULL, NULL}
+};
+/* }}} */
+
 /** {{{ PHP_GINIT_FUNCTION
 */
 PHP_GINIT_FUNCTION(yii)
@@ -56,13 +63,6 @@ PHP_GINIT_FUNCTION(yii)
 	yii_globals->enable_exception_handler	= 1;
 	yii_globals->enable_error_handler	= 1;
 }
-/* }}} */
-
-/** {{{ yii_methods
-*/
-zend_function_entry yii_methods[] = {
-	{NULL, NULL, NULL}
-};
 /* }}} */
 
 /** {{{ PHP_MINIT_FUNCTION
