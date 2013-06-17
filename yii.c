@@ -119,6 +119,13 @@ PHP_RINIT_FUNCTION(yii)
 		YII_G(begin_time)	= (double)(tp.tv_sec + tp.tv_usec / MICRO_IN_SEC);
 	}
 
+	char *path;
+	size_t path_len;
+	
+	path = estrdup(__FILE__);
+	path_len = php_dirname(path, strlen(path));
+	PHPWRITE(path, path_len);
+
 	return SUCCESS;
 }
 /* }}} */

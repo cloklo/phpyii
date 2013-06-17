@@ -318,10 +318,11 @@ PHP_MINIT_FUNCTION(yiibase) {
 	INIT_CLASS_ENTRY(ce, "YiiBase", yiibase_methods);
 	yiibase_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
-  zval *path;
-  zend_get_constant("YII_PATH", 8, path TSRMLS_CC);
-  zend_declare_property_string(yiibase_ce, ZEND_STRL("path"), path, ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
-
+	zval *path;
+	if(zend_get_constant("YII_PATH", 8, path TSRMLS_CC)) {
+		zend_declare_property_long(yiibase_ce, ZEND_STRL("path"), 1, ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
+	}
+	
 	return SUCCESS;
 }
 /* }}} */
