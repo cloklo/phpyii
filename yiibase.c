@@ -42,7 +42,7 @@ ZEND_BEGIN_ARG_INFO_EX(yiibase_createconsoleapp_arginfo, 0, 0, 0)
 	ZEND_ARG_INFO(0, config)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(yiibase_createapplication_arginfo, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(yiibase_createapplication_arginfo, 0, 0, 1)
 	ZEND_ARG_INFO(0, class)
 	ZEND_ARG_INFO(0, config)
 ZEND_END_ARG_INFO()
@@ -119,33 +119,21 @@ ZEND_BEGIN_ARG_INFO_EX(yiibase_registerautoloader_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 /* }}} */
 
-/** {{{ int yiibase_object_init(char *name, int len TSRMLS_DC)
+/** {{{ int yiibase_create_application(char *class, int class_len, zval *config, zval *retval TSRMLS_DC)
  * */
-int yaf_application_is_module_name(char *name, int len TSRMLS_DC) {
-	zval				*modules, **ppzval;
-	HashTable			*ht;
-	yaf_application_t	*app;
+int yiibase_create_application(char *class, int class_len, zval *config, zval *retval TSRMLS_DC) {
+	zend_class_entry **ce = NULL;
 
-	app = zend_read_static_property(yaf_application_ce, ZEND_STRL(YAF_APPLICATION_PROPERTY_NAME_APP), 1 TSRMLS_CC);
-	if (!app || Z_TYPE_P(app) != IS_OBJECT) {
-		return 0;
-	}
-
-	modules = zend_read_property(yaf_application_ce, app, ZEND_STRL(YAF_APPLICATION_PROPERTY_NAME_MODULES), 1 TSRMLS_CC);
-	if (!modules || Z_TYPE_P(modules) != IS_ARRAY) {
-		return 0;
-	}
-
-	ht = Z_ARRVAL_P(modules);
-	zend_hash_internal_pointer_reset(ht);
-	while (zend_hash_get_current_data(ht, (void **)&ppzval) == SUCCESS) {
-		if (Z_TYPE_PP(ppzval) == IS_STRING && Z_STRLEN_PP(ppzval) == len
-			&& strncasecmp(Z_STRVAL_PP(ppzval), name, len) == 0) {
-				return 1;
+	if (class_len) {
+		if (zend_lookup_class(class, class_len, &ce TSRMLS_CC) == FAILURE) {
+			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Class %s does not exist", class);
+			return 0;
 		}
-		zend_hash_move_forward(ht);
+		MAKE_STD_ZVAL(retval);
+		object_init_ex(retval, *ce);
 	}
-	return 0;
+
+	return 1;
 }
 /* }}} */
 
@@ -159,7 +147,13 @@ PHP_METHOD(yiibase, getVersion) {
 /** {{{ proto public static YiiBase::createWebApplication($config=null)
 */
 PHP_METHOD(yiibase, createWebApplication) {
-	RETURN_STRING(YII_VERSION, 1);
+	zval *config;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &config) == FAILURE) {
+		return;
+	}
+
+	yiibase_create_application("CWebApplication", 15, config, return_value TSRMLS_CC);
 }
 /* }}} */
 
@@ -190,7 +184,15 @@ PHP_METHOD(yiibase, createConsoleApplication) {
 /** {{{ proto public static YiiBase::createApplication($class,$config=null)
 */
 PHP_METHOD(yiibase, createApplication) {
-	RETURN_STRING(YII_VERSION, 1);
+	char *class;
+	int class_len;
+	zval *config;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|z", &class, &class_len, &config) == FAILURE) {
+		return;
+	}
+
+	yiibase_create_application(class, class_len, config, return_value TSRMLS_CC);
 }
 /* }}} */
 
