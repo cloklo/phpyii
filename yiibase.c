@@ -23,6 +23,7 @@
 #include "php.h"
 #include "php_ini.h"
 #include "main/SAPI.h"
+#include "Zend/zend_interfaces.h"
 
 #include "php_yii.h"
 #include "yiibase.h"
@@ -50,7 +51,7 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(yiibase_app_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(yiibase_setapplication_arginfo, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(yiibase_setapplication_arginfo, 0, 0, 1)
 	ZEND_ARG_INFO(0, app)
 ZEND_END_ARG_INFO()
 
@@ -119,21 +120,27 @@ ZEND_BEGIN_ARG_INFO_EX(yiibase_registerautoloader_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 /* }}} */
 
-/** {{{ int yiibase_create_application(char *class, int class_len, zval *config, zval *retval TSRMLS_DC)
+/** {{{ zval *yiibase_create_application(char *class, uint class_len, zval *config  TSRMLS_DC)
  * */
-int yiibase_create_application(char *class, int class_len, zval *config, zval *retval TSRMLS_DC) {
-	zend_class_entry **ce = NULL;
+zval *yiibase_create_application(char *class, uint class_len, zval *config  TSRMLS_DC) {
+	zval *object = NULL;
+	zend_class_entry **pce = NULL;
 
 	if (class_len) {
-		if (zend_lookup_class(class, class_len, &ce TSRMLS_CC) == FAILURE) {
+		if (zend_lookup_class(class, class_len, &pce TSRMLS_CC) == FAILURE) {
 			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Class %s does not exist", class);
-			return 0;
+			return NULL;
 		}
-		MAKE_STD_ZVAL(retval);
-		object_init_ex(retval, *ce);
+
+		MAKE_STD_ZVAL(object);
+		object_init_ex(object, *pce);
+		
+		if (zend_hash_exists(&(*pce)->function_table, ZEND_STRS("__construct"))) {
+			zend_call_method_with_1_params(&object, *pce, &(*pce)->constructor, "__construct", NULL, config);
+		}
 	}
 
-	return 1;
+	return object;
 }
 /* }}} */
 
@@ -148,35 +155,31 @@ PHP_METHOD(yiibase, getVersion) {
 */
 PHP_METHOD(yiibase, createWebApplication) {
 	zval *config;
+	zval *retval;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &config) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|z", &config) == FAILURE) {
 		return;
 	}
 
-	yiibase_create_application("CWebApplication", 15, config, return_value TSRMLS_CC);
+	retval = yiibase_create_application(ZEND_STRL("CWebApplication"), config TSRMLS_CC);
+
+	RETURN_ZVAL(retval, 1, 1);
 }
 /* }}} */
 
 /** {{{ proto public static YiiBase::createConsoleApplication($config=null)
 */
 PHP_METHOD(yiibase, createConsoleApplication) {
-	char *path = "yiix.php";
+	zval *config;
+	zval *retval;
 
-	zend_file_handle file_handle;
-	zend_op_array	*op_array;
-	char realpath[MAXPATHLEN];
-
-	if (!VCWD_REALPATH(path, realpath)) {
-	//	return 0;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|z", &config) == FAILURE) {
+		return;
 	}
 
-	file_handle.type = ZEND_HANDLE_FILENAME;
-	file_handle.filename = path;
-	file_handle.opened_path = NULL;
-	file_handle.free_filename = 0;
+	retval = yiibase_create_application(ZEND_STRL("CConsoleApplication"), config TSRMLS_CC);
 
-	zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &file_handle);
-
+	RETURN_ZVAL(retval, 1, 1);
 }
 /* }}} */
 
@@ -187,33 +190,53 @@ PHP_METHOD(yiibase, createApplication) {
 	char *class;
 	int class_len;
 	zval *config;
+	zval *retval;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|z", &class, &class_len, &config) == FAILURE) {
 		return;
 	}
 
-	yiibase_create_application(class, class_len, config, return_value TSRMLS_CC);
+	retval = yiibase_create_application(class, class_len, config TSRMLS_CC);
+
+	RETURN_ZVAL(retval, 1, 1);
 }
 /* }}} */
 
 /** {{{ proto public static YiiBase::app(void)
 */
 PHP_METHOD(yiibase, app) {
-	RETURN_STRING(YII_VERSION, 1);
+	zval *app;
+
+	app = zend_read_static_property(yiibase_ce, ZEND_STRL("_app"), 0 TSRMLS_CC);
+
+	RETURN_ZVAL(app, 1, 0);
 }
 /* }}} */
 
 /** {{{ proto public static YiiBase::setApplication($app)
 */
 PHP_METHOD(yiibase, setApplication) {
-	RETURN_STRING(YII_VERSION, 1);
+	zval *app;
+	zval *zapp;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &zapp) == FAILURE) {
+		return;
+	}
+
+	app = zend_read_static_property(yiibase_ce, ZEND_STRL("_app"), 0 TSRMLS_CC);
+
+	if (Z_TYPE_P(app) == IS_NULL || Z_TYPE_P(zapp) == IS_NULL) {
+		zend_update_static_property(yiibase_ce, ZEND_STRL("_app"), zapp TSRMLS_CC);
+	} else {
+		zend_throw_exception(zend_exception_get_default(TSRMLS_C), "Yii application can only be created once.", E_ERROR TSRMLS_CC);
+	}
 }
 /* }}} */
 
 /** {{{ proto public static YiiBase::getFrameworkPath(void)
 */
 PHP_METHOD(yiibase, getFrameworkPath) {
-	if(!zend_get_constant("YII_PATH", 8, return_value TSRMLS_CC)) {
+	if(!zend_get_constant(ZEND_STRL("YII_PATH"), return_value TSRMLS_CC)) {
 		ZVAL_STRING(return_value, YII_G(path), 1);
 	}
 }
@@ -250,7 +273,22 @@ PHP_METHOD(yiibase, setPathOfAlias) {
 /** {{{ proto public static YiiBase::autoload($className)
 */
 PHP_METHOD(yiibase, autoload) {
-	RETURN_STRING(YII_VERSION, 1);
+	char *path = "yiix.php";
+
+	zend_file_handle file_handle;
+	zend_op_array	*op_array;
+	char realpath[MAXPATHLEN];
+
+	if (!VCWD_REALPATH(path, realpath)) {
+	//	return 0;
+	}
+
+	file_handle.type = ZEND_HANDLE_FILENAME;
+	file_handle.filename = path;
+	file_handle.opened_path = NULL;
+	file_handle.free_filename = 0;
+
+	zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &file_handle);
 }
 /* }}} */
 
@@ -356,6 +394,10 @@ PHP_MINIT_FUNCTION(yiibase) {
 	zend_declare_property_null(yiibase_ce, ZEND_STRL("classMap"), ZEND_ACC_PUBLIC|ZEND_ACC_STATIC TSRMLS_CC);
 	zend_declare_property_bool(yiibase_ce, ZEND_STRL("enableIncludePath"), 1, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC TSRMLS_CC);
 	zend_declare_property_null(yiibase_ce, ZEND_STRL("_aliases"), ZEND_ACC_PRIVATE|ZEND_ACC_STATIC TSRMLS_CC);
+	zend_declare_property_null(yiibase_ce, ZEND_STRL("_imports"), ZEND_ACC_PRIVATE|ZEND_ACC_STATIC TSRMLS_CC);
+	zend_declare_property_null(yiibase_ce, ZEND_STRL("_includePaths"), ZEND_ACC_PRIVATE|ZEND_ACC_STATIC TSRMLS_CC);
+	zend_declare_property_null(yiibase_ce, ZEND_STRL("_app"), ZEND_ACC_PRIVATE|ZEND_ACC_STATIC TSRMLS_CC);
+	zend_declare_property_null(yiibase_ce, ZEND_STRL("_logger"), ZEND_ACC_PRIVATE|ZEND_ACC_STATIC TSRMLS_CC);
 	
 	return SUCCESS;
 }
@@ -366,6 +408,7 @@ PHP_MINIT_FUNCTION(yiibase) {
 PHP_RINIT_FUNCTION(yiibase) {
 	zval *classmap;
 	zval *aliases;
+	zval *imports;
 
 	MAKE_STD_ZVAL(classmap);
 	array_init(classmap);
@@ -376,6 +419,10 @@ PHP_RINIT_FUNCTION(yiibase) {
 	add_assoc_string(aliases, "system", YII_G(path), 0);
 	add_assoc_string(aliases, "zii", YII_G(zii_path), 0);
 	zend_update_static_property(yiibase_ce, ZEND_STRL("_aliases"), aliases TSRMLS_CC);
+
+	MAKE_STD_ZVAL(imports);
+	array_init(imports);
+	zend_update_static_property(yiibase_ce, ZEND_STRL("_imports"), classmap TSRMLS_CC);
 
 	return SUCCESS;
 }
