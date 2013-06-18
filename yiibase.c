@@ -119,6 +119,36 @@ ZEND_BEGIN_ARG_INFO_EX(yiibase_registerautoloader_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 /* }}} */
 
+/** {{{ int yiibase_object_init(char *name, int len TSRMLS_DC)
+ * */
+int yaf_application_is_module_name(char *name, int len TSRMLS_DC) {
+	zval				*modules, **ppzval;
+	HashTable			*ht;
+	yaf_application_t	*app;
+
+	app = zend_read_static_property(yaf_application_ce, ZEND_STRL(YAF_APPLICATION_PROPERTY_NAME_APP), 1 TSRMLS_CC);
+	if (!app || Z_TYPE_P(app) != IS_OBJECT) {
+		return 0;
+	}
+
+	modules = zend_read_property(yaf_application_ce, app, ZEND_STRL(YAF_APPLICATION_PROPERTY_NAME_MODULES), 1 TSRMLS_CC);
+	if (!modules || Z_TYPE_P(modules) != IS_ARRAY) {
+		return 0;
+	}
+
+	ht = Z_ARRVAL_P(modules);
+	zend_hash_internal_pointer_reset(ht);
+	while (zend_hash_get_current_data(ht, (void **)&ppzval) == SUCCESS) {
+		if (Z_TYPE_PP(ppzval) == IS_STRING && Z_STRLEN_PP(ppzval) == len
+			&& strncasecmp(Z_STRVAL_PP(ppzval), name, len) == 0) {
+				return 1;
+		}
+		zend_hash_move_forward(ht);
+	}
+	return 0;
+}
+/* }}} */
+
 /** {{{ proto public static YiiBase::getVersion(void)
 */
 PHP_METHOD(yiibase, getVersion) {
@@ -181,7 +211,9 @@ PHP_METHOD(yiibase, setApplication) {
 /** {{{ proto public static YiiBase::getFrameworkPath(void)
 */
 PHP_METHOD(yiibase, getFrameworkPath) {
-  zend_get_constant("YII_PATH", 8, return_value TSRMLS_CC);
+	if(!zend_get_constant("YII_PATH", 8, return_value TSRMLS_CC)) {
+		ZVAL_STRING(return_value, YII_G(path), 1);
+	}
 }
 /* }}} */
 
@@ -315,14 +347,34 @@ zend_function_entry yiibase_methods[] = {
 */
 PHP_MINIT_FUNCTION(yiibase) {
 	zend_class_entry ce;
+
 	INIT_CLASS_ENTRY(ce, "YiiBase", yiibase_methods);
 	yiibase_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
-	zval *path;
-	if(zend_get_constant("YII_PATH", 8, path TSRMLS_CC)) {
-		zend_declare_property_long(yiibase_ce, ZEND_STRL("path"), 1, ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
-	}
+	zend_declare_property_null(yiibase_ce, ZEND_STRL("classMap"), ZEND_ACC_PUBLIC|ZEND_ACC_STATIC TSRMLS_CC);
+	zend_declare_property_bool(yiibase_ce, ZEND_STRL("enableIncludePath"), 1, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC TSRMLS_CC);
+	zend_declare_property_null(yiibase_ce, ZEND_STRL("_aliases"), ZEND_ACC_PRIVATE|ZEND_ACC_STATIC TSRMLS_CC);
 	
+	return SUCCESS;
+}
+/* }}} */
+
+/** {{{ PHP_RINIT_FUNCTION
+*/
+PHP_RINIT_FUNCTION(yiibase) {
+	zval *classmap;
+	zval *aliases;
+
+	MAKE_STD_ZVAL(classmap);
+	array_init(classmap);
+	zend_update_static_property(yiibase_ce, ZEND_STRL("classMap"), classmap TSRMLS_CC);
+	
+	MAKE_STD_ZVAL(aliases);
+	array_init(aliases);
+	add_assoc_string(aliases, "system", YII_G(path), 0);
+	add_assoc_string(aliases, "zii", YII_G(zii_path), 0);
+	zend_update_static_property(yiibase_ce, ZEND_STRL("_aliases"), aliases TSRMLS_CC);
+
 	return SUCCESS;
 }
 /* }}} */

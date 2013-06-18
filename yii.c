@@ -58,10 +58,14 @@ zend_function_entry yii_methods[] = {
 */
 PHP_GINIT_FUNCTION(yii)
 {
-	yii_globals->debug			= 0;
-	yii_globals->trace_level		= 0;
+	yii_globals->begin_time					= 0;
+	yii_globals->debug						= 0;
+	yii_globals->trace_level				= 0;
 	yii_globals->enable_exception_handler	= 1;
-	yii_globals->enable_error_handler	= 1;
+	yii_globals->enable_error_handler		= 1;
+	yii_globals->path						= NULL;
+	yii_globals->zii_path					= NULL;
+
 }
 /* }}} */
 
@@ -87,13 +91,11 @@ PHP_MINIT_FUNCTION(yii)
 PHP_MSHUTDOWN_FUNCTION(yii)
 {
 	if (YII_G(path)) {
-		zend_hash_destroy(YII_G(path));
-		pefree(YII_G(path), 1);
+		efree(YII_G(path));
 	}
 
 	if (YII_G(zii_path)) {
-		zend_hash_destroy(YII_G(zii_path));
-		pefree(YII_G(zii_path), 1);
+		efree(YII_G(zii_path));
 	}
 
 	return SUCCESS;
@@ -104,27 +106,39 @@ PHP_MSHUTDOWN_FUNCTION(yii)
 */
 PHP_RINIT_FUNCTION(yii)
 {
-	YII_G(path)			= NULL;
-	YII_G(zii_path)			= NULL;
+	struct timeval tp = {0};
+	char *path;
+	size_t path_len;
+	uint zii_path_len;
+
+	if (gettimeofday(&tp, NULL)) {
+		YII_G(begin_time)			= 0;	
+	} else {
+		YII_G(begin_time)			= (double)(tp.tv_sec + tp.tv_usec / MICRO_IN_SEC);
+	}
+
+	YII_G(debug)					= 0;
+	YII_G(trace_level)				= 0;
+	YII_G(enable_exception_handler)	= 1;
+	YII_G(enable_error_handler)		= 1;
+
+	path = SG(request_info).path_translated;
+	path_len = php_dirname(path, strlen(path));
+	zii_path_len = spprintf(&path, 0, "%s%czii", path, DEFAULT_SLASH);
+
+	YII_G(path)				= estrndup(path, path_len);
+	YII_G(zii_path)			= estrndup(path, zii_path_len);
+
 #if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4))
 	YII_G(buffer)			= NULL;
-	YII_G(owrite_handler)		= NULL;
+	YII_G(owrite_handler)	= NULL;
 	YII_G(buf_nesting)		= 0;
 #endif
 
-	struct timeval tp = {0};
-	if (gettimeofday(&tp, NULL)) {
-		YII_G(begin_time)	= 0;	
-	} else {
-		YII_G(begin_time)	= (double)(tp.tv_sec + tp.tv_usec / MICRO_IN_SEC);
-	}
+	efree(path);
 
-	char *path;
-	size_t path_len;
-	
-	path = estrdup(__FILE__);
-	path_len = php_dirname(path, strlen(path));
-	PHPWRITE(path, path_len);
+	/* rinit components */
+	PHP_RINIT(yiibase)(INIT_FUNC_ARGS_PASSTHRU);
 
 	return SUCCESS;
 }
