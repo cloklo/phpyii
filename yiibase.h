@@ -19,6 +19,15 @@
 #ifndef PHP_YIIBASE_H
 #define PHP_YIIBASE_H
 
+#define yii_create_application(result, cname, cname_len, config) \
+	yiibase_create_application((result), (cname), (cname_len), (config) ZEND_FILE_LINE_CC TSRMLS_CC)
+
+#define yii_create_component(result, config, argc, argv) \
+	yiibase_create_component((result), (config), (argc), (argv) ZEND_FILE_LINE_CC TSRMLS_CC)
+
+#define yii_import(alias, alias_len, force, result) \
+	yiibase_import((alias), (alias_len), (force), (result) ZEND_FILE_LINE_CC TSRMLS_CC)
+
 extern zend_class_entry *yiibase_ce;
 
 PHP_MINIT_FUNCTION(yiibase);
