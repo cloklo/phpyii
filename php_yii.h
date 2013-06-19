@@ -43,12 +43,6 @@ extern zend_module_entry yii_module_entry;
 
 #define YII_VERSION						"1.0.0"
 
-#define YII_MINIT_FUNCTION(module)		ZEND_MINIT_FUNCTION(yii_##module)
-#define YII_RINIT_FUNCTION(module)		ZEND_RINIT_FUNCTION(yii_##module)
-#define YII_SHUTDOWN_FUNCTION(module)	ZEND_MHUTDOWN_FUNCTION(yii_##module)
-#define YII_MODULE_STARTUP(module)		ZEND_MODULE_STARTUP_N(yii_##module)(INIT_FUNC_ARGS_PASSTHRU)
-#define YII_MODULE_SHUTDOWN(module)		ZEND_MODULE_SHUTDOWN_N(yii_##module)(INIT_FUNC_ARGS_PASSTHRU)
-
 #if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION == 2)) || (PHP_MAJOR_VERSION > 5)
 #define Z_SET_REFCOUNT_P(pz, rc)	  (pz)->refcount = rc
 #define Z_SET_REFCOUNT_PP(ppz, rc)	  Z_SET_REFCOUNT_P(*(ppz), rc)
@@ -57,7 +51,7 @@ extern zend_module_entry yii_module_entry;
 #define Z_DELREF_P	 ZVAL_DELREF
 #endif
 
-#define yii_application_t	zval
+#define yii_capplication_t	zval
 
 #define YII_ME(c, m, a, f) {m, PHP_MN(c), a, (zend_uint) (sizeof(a)/sizeof(struct _zend_arg_info)-1), f},
 
