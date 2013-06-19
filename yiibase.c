@@ -252,10 +252,37 @@ int yiibase_create_component(zval *result, zval *config, int argc, zval ***argv 
 	}
 
 	if (zend_hash_exists(&(*pce)->function_table, ZEND_STRS(ZEND_CONSTRUCTOR_FUNC_NAME))) {
-		if (argc < 1) {
+		zval retval, constructor;
+
+		INIT_ZVAL(retval);
+		INIT_ZVAL(constructor);
+
+		if (argc > 1) {
+			if (argc == 2) {
+				zend_call_method_with_1_params(&result, *pce, &(*pce)->constructor, ZEND_CONSTRUCTOR_FUNC_NAME, NULL, argv[1]);
+			} else if (argc == 3) {
+				zend_call_method_with_2_params(&result, *pce, &(*pce)->constructor, ZEND_CONSTRUCTOR_FUNC_NAME, NULL, argv[2]);
+			} else if (argc == 4) {
+				zval *params[3]	 = {0};
+				params[0] = argv[1];
+				params[1] = argv[2];
+				params[2] = argv[3];
+				ZVAL_STRING(&constructor, ZEND_CONSTRUCTOR_FUNC_NAME, 1);
+				if (call_user_function(NULL, &obj, &constructor, &retval, 3, params TSRMLS_CC) == FAILURE) {
+					php_error_docref(NULL TSRMLS_CC, E_ERROR, "Error calling constructor");
+				}
+			} else {
+				ZVAL_STRING(&constructor, "newInstance", 1);
+				if (call_user_function(NULL, &obj, &constructor, &retval, argc, argv TSRMLS_CC) == FAILURE) {
+					php_error_docref(NULL TSRMLS_CC, E_ERROR, "Error calling newInstance");
+				}
+			}
 		} else {
-			zend_call_method_with_0_params(&result, *pce, &(*pce)->constructor, ZEND_CONSTRUCTOR_FUNC_NAME);
+			zend_call_method_with_0_params(&result, *pce, &(*pce)->constructor, ZEND_CONSTRUCTOR_FUNC_NAME, NULL);
 		}
+
+		zval_dtor(&constructor);
+		zval_dtor(&retval);
 	}
 
 }
