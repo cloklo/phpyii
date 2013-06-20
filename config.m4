@@ -1,12 +1,23 @@
-PHP_ARG_ENABLE(yii, whether to enable yii framework support,
-[  --enable-yii           Enable yii framework support])
+PHP_ARG_ENABLE(yii, whether to enable Yii Framework support,
+[  --enable-yii           Enable Yii Framework support])
+
+AC_ARG_ENABLE(yii-gii,
+[  --enable-yii-gii     Enable Gii tool of Yii Framework default=no],
+[PHP_YII_GII=$enableval],
+[PHP_YII_GII="no"])  
 
 AC_ARG_ENABLE(yii-debug,
-[  --enable-yii-debug     Enable yii framework debug mode default=no],
+[  --enable-yii-debug     Enable Yii Framework debug mode default=no],
 [PHP_YII_DEBUG=$enableval],
 [PHP_YII_DEBUG="no"])  
 
 if test "$PHP_YII" != "no"; then
+
+  if test "$PHP_YII_GII" = "yes"; then
+    AC_DEFINE(PHP_YII_GII,1,[define to 1 if you want to enable Gii tool of Yii Framework])
+  else
+    AC_DEFINE(PHP_YII_GII,0,[define to 1 if you want to enable Gii tool of Yii Framework])
+  fi
 
   if test "$PHP_YII_DEBUG" = "yes"; then
     AC_DEFINE(PHP_YII_DEBUG,1,[define to 1 if you want to change the POST/GET by php script])
@@ -41,7 +52,12 @@ if test "$PHP_YII" != "no"; then
   else
     AC_MSG_RESULT([$php_version, ok])
   fi
-  PHP_NEW_EXTENSION(yii, yii.c \
-    yiibase.c \
-    , $ext_shared)
+
+  ext_files="yii.c yiibase.c"
+
+  if test "$PHP_YII_GII" = "yes"; then
+    ext_files=$ext_files" gii/gii.c"
+  fi
+
+  PHP_NEW_EXTENSION(yii, $ext_files, $ext_shared)
 fi

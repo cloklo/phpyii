@@ -19,14 +19,23 @@
 #ifndef PHP_YIIBASE_H
 #define PHP_YIIBASE_H
 
+#define yii_import(alias, alias_len, force, result) \
+	yiibase_import((alias), (alias_len), (force), (result) ZEND_FILE_LINE_CC TSRMLS_CC)
+
+#define yii_autoload(cname, cname_len) \
+	yiibase_autoload((cname), (cname_len) ZEND_FILE_LINE_CC TSRMLS_CC)
+
+#define yii_set_path_of_alias(alias, alias_len, path, path_len) \
+	yiibase_set_path_of_alias((alias), (alias_len), (path), (path_len) ZEND_FILE_LINE_CC TSRMLS_CC)
+
+#define yii_get_path_of_alias(alias, alias_len, path, path_len) \
+	yiibase_get_path_of_alias((alias), (alias_len), (path), (path_len) ZEND_FILE_LINE_CC TSRMLS_CC)
+
 #define yii_create_application(result, cname, cname_len, config) \
 	yiibase_create_application((result), (cname), (cname_len), (config) ZEND_FILE_LINE_CC TSRMLS_CC)
 
 #define yii_create_component(result, config, argc, argv) \
 	yiibase_create_component((result), (config), (argc), (argv) ZEND_FILE_LINE_CC TSRMLS_CC)
-
-#define yii_import(alias, alias_len, force, result) \
-	yiibase_import((alias), (alias_len), (force), (result) ZEND_FILE_LINE_CC TSRMLS_CC)
 
 extern zend_class_entry *yiibase_ce;
 
