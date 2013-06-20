@@ -224,10 +224,28 @@ int yiibase_get_path_of_alias(char *alias, int alias_len, char **path, int *path
 }
 /* }}} */
 
+/** {{{ char *yiibase_get_framework_path(ZEND_FILE_LINE_DC TSRMLS_DC)
+*/
+char *yiibase_get_framework_path(ZEND_FILE_LINE_DC TSRMLS_DC) {
+	zval *path;
+
+	if (YII_G(yii_path)) {
+		return YII_G(yii_path); 
+	}
+	
+	if (zend_hash_find(EG(zend_constants), ZEND_STRS("YII_PATH"), (void **) &path) == SUCCESS) {
+		convert_to_string(path);
+		YII_G(yii_path) = estrndup(Z_STRVAL_P(path), Z_STRLEN_P(path));
+		return YII_G(yii_path);
+	}
+
+	return YII_G(path);
+}
+/* }}} */
+
 /** {{{ int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC)
 */
 int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC) {
-	char *path = "yiix.php";
 	zval *classmap;
 
 	classmap = zend_read_static_property(yiibase_ce, ZEND_STRL("classMap"), 0 TSRMLS_CC);
@@ -237,15 +255,13 @@ int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC) {
 
 		if (zend_hash_find(Z_ARRVAL_P(classmap), cname, cname_len+1, (void**)&ppzval) == SUCCESS) {
 			convert_to_string_ex(ppzval);
-			//path_len = Z_STRLEN_PP(ppzval);
-			//path = Z_STRVAL_PP(ppzval);
 
 			zend_file_handle file_handle;
 
 			file_handle.type = ZEND_HANDLE_FILENAME;
-			file_handle.filename = Z_STRVAL_PP(ppzval);
 			file_handle.opened_path = NULL;
 			file_handle.free_filename = 0;
+			file_handle.filename = Z_STRVAL_PP(ppzval);
 
 			zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &file_handle);
 
@@ -254,23 +270,21 @@ int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC) {
 	}
 
 	zval *coreclasses;
-
+	
 	coreclasses = zend_read_static_property(yiibase_ce, ZEND_STRL("_coreClasses"), 0 TSRMLS_CC);
 
-	if (Z_TYPE_P(classmap) == IS_ARRAY) {
+	if (Z_TYPE_P(coreclasses) == IS_ARRAY) {
 		zval **ppzval;
 
-		if (zend_hash_find(Z_ARRVAL_P(classmap), cname, cname_len+1, (void**)&ppzval) == SUCCESS) {
+		if (zend_hash_find(Z_ARRVAL_P(coreclasses), cname, cname_len+1, (void**)&ppzval) == SUCCESS) {
 			convert_to_string_ex(ppzval);
-			//path_len = Z_STRLEN_PP(ppzval);
-			//path = Z_STRVAL_PP(ppzval);
 
 			zend_file_handle file_handle;
 
 			file_handle.type = ZEND_HANDLE_FILENAME;
-			file_handle.filename = Z_STRVAL_PP(ppzval);
 			file_handle.opened_path = NULL;
 			file_handle.free_filename = 0;
+			spprintf(&file_handle.filename, 0, "%s%s",  yii_get_framework_path(), Z_STRVAL_PP(ppzval));
 
 			zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &file_handle);
 
@@ -725,6 +739,220 @@ PHP_RINIT_FUNCTION(yiibase) {
 	array_init(coreclasses);
 	add_assoc_string(coreclasses, "CApplication", "/base/CApplication.php", 0);
 	add_assoc_string(coreclasses, "CApplicationComponent", "/base/CApplicationComponent.php", 0);
+	add_assoc_string(coreclasses, "CBehavior", "/base/CBehavior.php", 0);
+	add_assoc_string(coreclasses, "CComponent", "/base/CComponent.php", 0);
+	add_assoc_string(coreclasses, "CErrorEvent", "/base/CErrorEvent.php", 0);
+	add_assoc_string(coreclasses, "CErrorHandler", "/base/CErrorHandler.php", 0);
+	add_assoc_string(coreclasses, "CException", "/base/CException.php", 0);
+	add_assoc_string(coreclasses, "CExceptionEvent", "/base/CExceptionEvent.php", 0);
+	add_assoc_string(coreclasses, "CHttpException", "/base/CHttpException.php", 0);
+	add_assoc_string(coreclasses, "CModel", "/base/CModel.php", 0);
+	add_assoc_string(coreclasses, "CModelBehavior", "/base/CModelBehavior.php", 0);
+	add_assoc_string(coreclasses, "CModelEvent", "/base/CModelEvent.php", 0);
+	add_assoc_string(coreclasses, "CModule", "/base/CModule.php", 0);
+	add_assoc_string(coreclasses, "CSecurityManager", "/base/CSecurityManager.php", 0);
+	add_assoc_string(coreclasses, "CStatePersister", "/base/CStatePersister.php", 0);
+	add_assoc_string(coreclasses, "CApcCache", "/caching/CApcCache.php", 0);
+	add_assoc_string(coreclasses, "CCache", "/caching/CCache.php", 0);
+	add_assoc_string(coreclasses, "CDbCache", "/caching/CDbCache.php", 0);
+	add_assoc_string(coreclasses, "CDummyCache", "/caching/CDummyCache.php", 0);
+	add_assoc_string(coreclasses, "CEAcceleratorCache", "/caching/CEAcceleratorCache.php", 0);
+	add_assoc_string(coreclasses, "CFileCache", "/caching/CFileCache.php", 0);
+	add_assoc_string(coreclasses, "CMemCache", "/caching/CMemCache.php", 0);
+	add_assoc_string(coreclasses, "CWinCache", "/caching/CWinCache.php", 0);
+	add_assoc_string(coreclasses, "CXCache", "/caching/CXCache.php", 0);
+	add_assoc_string(coreclasses, "CZendDataCache", "/caching/CZendDataCache.php", 0);
+	add_assoc_string(coreclasses, "CCacheDependency", "/caching/dependencies/CCacheDependency.php", 0);
+	add_assoc_string(coreclasses, "CChainedCacheDependency", "/caching/dependencies/CChainedCacheDependency.php", 0);
+	add_assoc_string(coreclasses, "CDbCacheDependency", "/caching/dependencies/CDbCacheDependency.php", 0);
+	add_assoc_string(coreclasses, "CDirectoryCacheDependency", "/caching/dependencies/CDirectoryCacheDependency.php", 0);
+	add_assoc_string(coreclasses, "CExpressionDependency", "/caching/dependencies/CExpressionDependency.php", 0);
+	add_assoc_string(coreclasses, "CFileCacheDependency", "/caching/dependencies/CFileCacheDependency.php", 0);
+	add_assoc_string(coreclasses, "CGlobalStateCacheDependency", "/caching/dependencies/CGlobalStateCacheDependency.php", 0);
+	add_assoc_string(coreclasses, "CAttributeCollection", "/collections/CAttributeCollection.php", 0);
+	add_assoc_string(coreclasses, "CConfiguration", "/collections/CConfiguration.php", 0);
+	add_assoc_string(coreclasses, "CList", "/collections/CList.php", 0);
+	add_assoc_string(coreclasses, "CListIterator", "/collections/CListIterator.php", 0);
+	add_assoc_string(coreclasses, "CMap", "/collections/CMap.php", 0);
+	add_assoc_string(coreclasses, "CMapIterator", "/collections/CMapIterator.php", 0);
+	add_assoc_string(coreclasses, "CQueue", "/collections/CQueue.php", 0);
+	add_assoc_string(coreclasses, "CQueueIterator", "/collections/CQueueIterator.php", 0);
+	add_assoc_string(coreclasses, "CStack", "/collections/CStack.php", 0);
+	add_assoc_string(coreclasses, "CStackIterator", "/collections/CStackIterator.php", 0);
+	add_assoc_string(coreclasses, "CTypedList", "/collections/CTypedList.php", 0);
+	add_assoc_string(coreclasses, "CTypedMap", "/collections/CTypedMap.php", 0);
+	add_assoc_string(coreclasses, "CConsoleApplication", "/console/CConsoleApplication.php", 0);
+	add_assoc_string(coreclasses, "CConsoleCommand", "/console/CConsoleCommand.php", 0);
+	add_assoc_string(coreclasses, "CConsoleCommandBehavior", "/console/CConsoleCommandBehavior.php", 0);
+	add_assoc_string(coreclasses, "CConsoleCommandEvent", "/console/CConsoleCommandEvent.php", 0);
+	add_assoc_string(coreclasses, "CConsoleCommandRunner", "/console/CConsoleCommandRunner.php", 0);
+	add_assoc_string(coreclasses, "CHelpCommand", "/console/CHelpCommand.php", 0);
+	add_assoc_string(coreclasses, "CDbCommand", "/db/CDbCommand.php", 0);
+	add_assoc_string(coreclasses, "CDbConnection", "/db/CDbConnection.php", 0);
+	add_assoc_string(coreclasses, "CDbDataReader", "/db/CDbDataReader.php", 0);
+	add_assoc_string(coreclasses, "CDbException", "/db/CDbException.php", 0);
+	add_assoc_string(coreclasses, "CDbMigration", "/db/CDbMigration.php", 0);
+	add_assoc_string(coreclasses, "CDbTransaction", "/db/CDbTransaction.php", 0);
+	add_assoc_string(coreclasses, "CActiveFinder", "/db/ar/CActiveFinder.php", 0);
+	add_assoc_string(coreclasses, "CActiveRecord", "/db/ar/CActiveRecord.php", 0);
+	add_assoc_string(coreclasses, "CActiveRecordBehavior", "/db/ar/CActiveRecordBehavior.php", 0);
+	add_assoc_string(coreclasses, "CDbColumnSchema", "/db/schema/CDbColumnSchema.php", 0);
+	add_assoc_string(coreclasses, "CDbCommandBuilder", "/db/schema/CDbCommandBuilder.php", 0);
+	add_assoc_string(coreclasses, "CDbCriteria", "/db/schema/CDbCriteria.php", 0);
+	add_assoc_string(coreclasses, "CDbExpression", "/db/schema/CDbExpression.php", 0);
+	add_assoc_string(coreclasses, "CDbSchema", "/db/schema/CDbSchema.php", 0);
+	add_assoc_string(coreclasses, "CDbTableSchema", "/db/schema/CDbTableSchema.php", 0);
+	add_assoc_string(coreclasses, "CMssqlColumnSchema", "/db/schema/mssql/CMssqlColumnSchema.php", 0);
+	add_assoc_string(coreclasses, "CMssqlCommandBuilder", "/db/schema/mssql/CMssqlCommandBuilder.php", 0);
+	add_assoc_string(coreclasses, "CMssqlPdoAdapter", "/db/schema/mssql/CMssqlPdoAdapter.php", 0);
+	add_assoc_string(coreclasses, "CMssqlSchema", "/db/schema/mssql/CMssqlSchema.php", 0);
+	add_assoc_string(coreclasses, "CMssqlSqlsrvPdoAdapter", "/db/schema/mssql/CMssqlSqlsrvPdoAdapter.php", 0);
+	add_assoc_string(coreclasses, "CMssqlTableSchema", "/db/schema/mssql/CMssqlTableSchema.php", 0);
+	add_assoc_string(coreclasses, "CMysqlColumnSchema", "/db/schema/mysql/CMysqlColumnSchema.php", 0);
+	add_assoc_string(coreclasses, "CMysqlCommandBuilder", "/db/schema/mysql/CMysqlCommandBuilder.php", 0);
+	add_assoc_string(coreclasses, "CMysqlSchema", "/db/schema/mysql/CMysqlSchema.php", 0);
+	add_assoc_string(coreclasses, "CMysqlTableSchema", "/db/schema/mysql/CMysqlTableSchema.php", 0);
+	add_assoc_string(coreclasses, "COciColumnSchema", "/db/schema/oci/COciColumnSchema.php", 0);
+	add_assoc_string(coreclasses, "COciCommandBuilder", "/db/schema/oci/COciCommandBuilder.php", 0);
+	add_assoc_string(coreclasses, "COciSchema", "/db/schema/oci/COciSchema.php", 0);
+	add_assoc_string(coreclasses, "COciTableSchema", "/db/schema/oci/COciTableSchema.php", 0);
+	add_assoc_string(coreclasses, "CPgsqlColumnSchema", "/db/schema/pgsql/CPgsqlColumnSchema.php", 0);
+	add_assoc_string(coreclasses, "CPgsqlSchema", "/db/schema/pgsql/CPgsqlSchema.php", 0);
+	add_assoc_string(coreclasses, "CPgsqlTableSchema", "/db/schema/pgsql/CPgsqlTableSchema.php", 0);
+	add_assoc_string(coreclasses, "CSqliteColumnSchema", "/db/schema/sqlite/CSqliteColumnSchema.php", 0);
+	add_assoc_string(coreclasses, "CSqliteCommandBuilder", "/db/schema/sqlite/CSqliteCommandBuilder.php", 0);
+	add_assoc_string(coreclasses, "CSqliteSchema", "/db/schema/sqlite/CSqliteSchema.php", 0);
+	add_assoc_string(coreclasses, "CChoiceFormat", "/i18n/CChoiceFormat.php", 0);
+	add_assoc_string(coreclasses, "CDateFormatter", "/i18n/CDateFormatter.php", 0);
+	add_assoc_string(coreclasses, "CDbMessageSource", "/i18n/CDbMessageSource.php", 0);
+	add_assoc_string(coreclasses, "CGettextMessageSource", "/i18n/CGettextMessageSource.php", 0);
+	add_assoc_string(coreclasses, "CLocale", "/i18n/CLocale.php", 0);
+	add_assoc_string(coreclasses, "CMessageSource", "/i18n/CMessageSource.php", 0);
+	add_assoc_string(coreclasses, "CNumberFormatter", "/i18n/CNumberFormatter.php", 0);
+	add_assoc_string(coreclasses, "CPhpMessageSource", "/i18n/CPhpMessageSource.php", 0);
+	add_assoc_string(coreclasses, "CGettextFile", "/i18n/gettext/CGettextFile.php", 0);
+	add_assoc_string(coreclasses, "CGettextMoFile", "/i18n/gettext/CGettextMoFile.php", 0);
+	add_assoc_string(coreclasses, "CGettextPoFile", "/i18n/gettext/CGettextPoFile.php", 0);
+	add_assoc_string(coreclasses, "CChainedLogFilter", "/logging/CChainedLogFilter.php", 0);
+	add_assoc_string(coreclasses, "CDbLogRoute", "/logging/CDbLogRoute.php", 0);
+	add_assoc_string(coreclasses, "CEmailLogRoute", "/logging/CEmailLogRoute.php", 0);
+	add_assoc_string(coreclasses, "CFileLogRoute", "/logging/CFileLogRoute.php", 0);
+	add_assoc_string(coreclasses, "CLogFilter", "/logging/CLogFilter.php", 0);
+	add_assoc_string(coreclasses, "CLogRoute", "/logging/CLogRoute.php", 0);
+	add_assoc_string(coreclasses, "CLogRouter", "/logging/CLogRouter.php", 0);
+	add_assoc_string(coreclasses, "CLogger", "/logging/CLogger.php", 0);
+	add_assoc_string(coreclasses, "CProfileLogRoute", "/logging/CProfileLogRoute.php", 0);
+	add_assoc_string(coreclasses, "CWebLogRoute", "/logging/CWebLogRoute.php", 0);
+	add_assoc_string(coreclasses, "CDateTimeParser", "/utils/CDateTimeParser.php", 0);
+	add_assoc_string(coreclasses, "CFileHelper", "/utils/CFileHelper.php", 0);
+	add_assoc_string(coreclasses, "CFormatter", "/utils/CFormatter.php", 0);
+	add_assoc_string(coreclasses, "CMarkdownParser", "/utils/CMarkdownParser.php", 0);
+	add_assoc_string(coreclasses, "CPropertyValue", "/utils/CPropertyValue.php", 0);
+	add_assoc_string(coreclasses, "CTimestamp", "/utils/CTimestamp.php", 0);
+	add_assoc_string(coreclasses, "CVarDumper", "/utils/CVarDumper.php", 0);
+	add_assoc_string(coreclasses, "CBooleanValidator", "/validators/CBooleanValidator.php", 0);
+	add_assoc_string(coreclasses, "CCaptchaValidator", "/validators/CCaptchaValidator.php", 0);
+	add_assoc_string(coreclasses, "CCompareValidator", "/validators/CCompareValidator.php", 0);
+	add_assoc_string(coreclasses, "CDateValidator", "/validators/CDateValidator.php", 0);
+	add_assoc_string(coreclasses, "CDefaultValueValidator", "/validators/CDefaultValueValidator.php", 0);
+	add_assoc_string(coreclasses, "CEmailValidator", "/validators/CEmailValidator.php", 0);
+	add_assoc_string(coreclasses, "CExistValidator", "/validators/CExistValidator.php", 0);
+	add_assoc_string(coreclasses, "CFileValidator", "/validators/CFileValidator.php", 0);
+	add_assoc_string(coreclasses, "CFilterValidator", "/validators/CFilterValidator.php", 0);
+	add_assoc_string(coreclasses, "CInlineValidator", "/validators/CInlineValidator.php", 0);
+	add_assoc_string(coreclasses, "CNumberValidator", "/validators/CNumberValidator.php", 0);
+	add_assoc_string(coreclasses, "CRangeValidator", "/validators/CRangeValidator.php", 0);
+	add_assoc_string(coreclasses, "CRegularExpressionValidator", "/validators/CRegularExpressionValidator.php", 0);
+	add_assoc_string(coreclasses, "CRequiredValidator", "/validators/CRequiredValidator.php", 0);
+	add_assoc_string(coreclasses, "CSafeValidator", "/validators/CSafeValidator.php", 0);
+	add_assoc_string(coreclasses, "CStringValidator", "/validators/CStringValidator.php", 0);
+	add_assoc_string(coreclasses, "CTypeValidator", "/validators/CTypeValidator.php", 0);
+	add_assoc_string(coreclasses, "CUniqueValidator", "/validators/CUniqueValidator.php", 0);
+	add_assoc_string(coreclasses, "CUnsafeValidator", "/validators/CUnsafeValidator.php", 0);
+	add_assoc_string(coreclasses, "CUrlValidator", "/validators/CUrlValidator.php", 0);
+	add_assoc_string(coreclasses, "CValidator", "/validators/CValidator.php", 0);
+	add_assoc_string(coreclasses, "CActiveDataProvider", "/web/CActiveDataProvider.php", 0);
+	add_assoc_string(coreclasses, "CArrayDataProvider", "/web/CArrayDataProvider.php", 0);
+	add_assoc_string(coreclasses, "CAssetManager", "/web/CAssetManager.php", 0);
+	add_assoc_string(coreclasses, "CBaseController", "/web/CBaseController.php", 0);
+	add_assoc_string(coreclasses, "CCacheHttpSession", "/web/CCacheHttpSession.php", 0);
+	add_assoc_string(coreclasses, "CClientScript", "/web/CClientScript.php", 0);
+	add_assoc_string(coreclasses, "CController", "/web/CController.php", 0);
+	add_assoc_string(coreclasses, "CDataProvider", "/web/CDataProvider.php", 0);
+	add_assoc_string(coreclasses, "CDataProviderIterator", "/web/CDataProviderIterator.php", 0);
+	add_assoc_string(coreclasses, "CDbHttpSession", "/web/CDbHttpSession.php", 0);
+	add_assoc_string(coreclasses, "CExtController", "/web/CExtController.php", 0);
+	add_assoc_string(coreclasses, "CFormModel", "/web/CFormModel.php", 0);
+	add_assoc_string(coreclasses, "CHttpCookie", "/web/CHttpCookie.php", 0);
+	add_assoc_string(coreclasses, "CHttpRequest", "/web/CHttpRequest.php", 0);
+	add_assoc_string(coreclasses, "CHttpSession", "/web/CHttpSession.php", 0);
+	add_assoc_string(coreclasses, "CHttpSessionIterator", "/web/CHttpSessionIterator.php", 0);
+	add_assoc_string(coreclasses, "COutputEvent", "/web/COutputEvent.php", 0);
+	add_assoc_string(coreclasses, "CPagination", "/web/CPagination.php", 0);
+	add_assoc_string(coreclasses, "CSort", "/web/CSort.php", 0);
+	add_assoc_string(coreclasses, "CSqlDataProvider", "/web/CSqlDataProvider.php", 0);
+	add_assoc_string(coreclasses, "CTheme", "/web/CTheme.php", 0);
+	add_assoc_string(coreclasses, "CThemeManager", "/web/CThemeManager.php", 0);
+	add_assoc_string(coreclasses, "CUploadedFile", "/web/CUploadedFile.php", 0);
+	add_assoc_string(coreclasses, "CUrlManager", "/web/CUrlManager.php", 0);
+	add_assoc_string(coreclasses, "CWebApplication", "/web/CWebApplication.php", 0);
+	add_assoc_string(coreclasses, "CWebModule", "/web/CWebModule.php", 0);
+	add_assoc_string(coreclasses, "CWidgetFactory", "/web/CWidgetFactory.php", 0);
+	add_assoc_string(coreclasses, "CAction", "/web/actions/CAction.php", 0);
+	add_assoc_string(coreclasses, "CInlineAction", "/web/actions/CInlineAction.php", 0);
+	add_assoc_string(coreclasses, "CViewAction", "/web/actions/CViewAction.php", 0);
+	add_assoc_string(coreclasses, "CAccessControlFilter", "/web/auth/CAccessControlFilter.php", 0);
+	add_assoc_string(coreclasses, "CAuthAssignment", "/web/auth/CAuthAssignment.php", 0);
+	add_assoc_string(coreclasses, "CAuthItem", "/web/auth/CAuthItem.php", 0);
+	add_assoc_string(coreclasses, "CAuthManager", "/web/auth/CAuthManager.php", 0);
+	add_assoc_string(coreclasses, "CBaseUserIdentity", "/web/auth/CBaseUserIdentity.php", 0);
+	add_assoc_string(coreclasses, "CDbAuthManager", "/web/auth/CDbAuthManager.php", 0);
+	add_assoc_string(coreclasses, "CPhpAuthManager", "/web/auth/CPhpAuthManager.php", 0);
+	add_assoc_string(coreclasses, "CUserIdentity", "/web/auth/CUserIdentity.php", 0);
+	add_assoc_string(coreclasses, "CWebUser", "/web/auth/CWebUser.php", 0);
+	add_assoc_string(coreclasses, "CFilter", "/web/filters/CFilter.php", 0);
+	add_assoc_string(coreclasses, "CFilterChain", "/web/filters/CFilterChain.php", 0);
+	add_assoc_string(coreclasses, "CHttpCacheFilter", "/web/filters/CHttpCacheFilter.php", 0);
+	add_assoc_string(coreclasses, "CInlineFilter", "/web/filters/CInlineFilter.php", 0);
+	add_assoc_string(coreclasses, "CForm", "/web/form/CForm.php", 0);
+	add_assoc_string(coreclasses, "CFormButtonElement", "/web/form/CFormButtonElement.php", 0);
+	add_assoc_string(coreclasses, "CFormElement", "/web/form/CFormElement.php", 0);
+	add_assoc_string(coreclasses, "CFormElementCollection", "/web/form/CFormElementCollection.php", 0);
+	add_assoc_string(coreclasses, "CFormInputElement", "/web/form/CFormInputElement.php", 0);
+	add_assoc_string(coreclasses, "CFormStringElement", "/web/form/CFormStringElement.php", 0);
+	add_assoc_string(coreclasses, "CGoogleApi", "/web/helpers/CGoogleApi.php", 0);
+	add_assoc_string(coreclasses, "CHtml", "/web/helpers/CHtml.php", 0);
+	add_assoc_string(coreclasses, "CJSON", "/web/helpers/CJSON.php", 0);
+	add_assoc_string(coreclasses, "CJavaScript", "/web/helpers/CJavaScript.php", 0);
+	add_assoc_string(coreclasses, "CJavaScriptExpression", "/web/helpers/CJavaScriptExpression.php", 0);
+	add_assoc_string(coreclasses, "CPradoViewRenderer", "/web/renderers/CPradoViewRenderer.php", 0);
+	add_assoc_string(coreclasses, "CViewRenderer", "/web/renderers/CViewRenderer.php", 0);
+	add_assoc_string(coreclasses, "CWebService", "/web/services/CWebService.php", 0);
+	add_assoc_string(coreclasses, "CWebServiceAction", "/web/services/CWebServiceAction.php", 0);
+	add_assoc_string(coreclasses, "CWsdlGenerator", "/web/services/CWsdlGenerator.php", 0);
+	add_assoc_string(coreclasses, "CActiveForm", "/web/widgets/CActiveForm.php", 0);
+	add_assoc_string(coreclasses, "CAutoComplete", "/web/widgets/CAutoComplete.php", 0);
+	add_assoc_string(coreclasses, "CClipWidget", "/web/widgets/CClipWidget.php", 0);
+	add_assoc_string(coreclasses, "CContentDecorator", "/web/widgets/CContentDecorator.php", 0);
+	add_assoc_string(coreclasses, "CFilterWidget", "/web/widgets/CFilterWidget.php", 0);
+	add_assoc_string(coreclasses, "CFlexWidget", "/web/widgets/CFlexWidget.php", 0);
+	add_assoc_string(coreclasses, "CHtmlPurifier", "/web/widgets/CHtmlPurifier.php", 0);
+	add_assoc_string(coreclasses, "CInputWidget", "/web/widgets/CInputWidget.php", 0);
+	add_assoc_string(coreclasses, "CMarkdown", "/web/widgets/CMarkdown.php", 0);
+	add_assoc_string(coreclasses, "CMaskedTextField", "/web/widgets/CMaskedTextField.php", 0);
+	add_assoc_string(coreclasses, "CMultiFileUpload", "/web/widgets/CMultiFileUpload.php", 0);
+	add_assoc_string(coreclasses, "COutputCache", "/web/widgets/COutputCache.php", 0);
+	add_assoc_string(coreclasses, "COutputProcessor", "/web/widgets/COutputProcessor.php", 0);
+	add_assoc_string(coreclasses, "CStarRating", "/web/widgets/CStarRating.php", 0);
+	add_assoc_string(coreclasses, "CTabView", "/web/widgets/CTabView.php", 0);
+	add_assoc_string(coreclasses, "CTextHighlighter", "/web/widgets/CTextHighlighter.php", 0);
+	add_assoc_string(coreclasses, "CTreeView", "/web/widgets/CTreeView.php", 0);
+	add_assoc_string(coreclasses, "CWidget", "/web/widgets/CWidget.php", 0);
+	add_assoc_string(coreclasses, "CCaptcha", "/web/widgets/captcha/CCaptcha.php", 0);
+	add_assoc_string(coreclasses, "CCaptchaAction", "/web/widgets/captcha/CCaptchaAction.php", 0);
+	add_assoc_string(coreclasses, "CBasePager", "/web/widgets/pagers/CBasePager.php", 0);
+	add_assoc_string(coreclasses, "CLinkPager", "/web/widgets/pagers/CLinkPager.php", 0);
+	add_assoc_string(coreclasses, "CListPager", "/web/widgets/pagers/CListPager.php", 0);
 	zend_update_static_property(yiibase_ce, ZEND_STRL("_coreClasses"), coreclasses TSRMLS_CC);
 
 	// spl_autoload_register

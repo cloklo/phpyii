@@ -65,6 +65,7 @@ ZEND_BEGIN_MODULE_GLOBALS(yii)
 	zend_bool	enable_exception_handler;
 	zend_bool	enable_error_handler;
 	char		*path;
+	char		*yii_path;
 	char		*zii_path;
 #if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4))
 	uint		buf_nesting;

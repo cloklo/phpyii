@@ -64,6 +64,7 @@ PHP_GINIT_FUNCTION(yii)
 	yii_globals->enable_exception_handler	= 1;
 	yii_globals->enable_error_handler		= 1;
 	yii_globals->path						= NULL;
+	yii_globals->yii_path					= NULL;
 	yii_globals->zii_path					= NULL;
 
 }
