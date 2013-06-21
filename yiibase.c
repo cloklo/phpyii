@@ -247,6 +247,7 @@ char *yiibase_get_framework_path(ZEND_FILE_LINE_DC TSRMLS_DC) {
 */
 int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC) {
 	zval *classmap;
+	zval *coreclasses;
 
 	classmap = zend_read_static_property(yiibase_ce, ZEND_STRL("classMap"), 0 TSRMLS_CC);
 
@@ -269,8 +270,6 @@ int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC) {
 		}
 	}
 
-	zval *coreclasses;
-	
 	coreclasses = zend_read_static_property(yiibase_ce, ZEND_STRL("_coreClasses"), 0 TSRMLS_CC);
 
 	if (Z_TYPE_P(coreclasses) == IS_ARRAY) {
@@ -290,6 +289,62 @@ int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC) {
 
 			return SUCCESS;
 		}
+	}
+
+	char *find;
+
+	if (php_memnstr(cname, "\\", 1, cname + cname_len)) {
+		char *path, *alias;
+		uint path_len, alias_len = 0;
+
+		while (*cname == '\\') {
+			cname++;
+		}
+
+		while (*cname != '\0') {
+			if (*cname == '\\') {
+				*alias = '.';
+			} else {
+				*alias =  *cname;
+			}
+			alias_len++;
+			alias++;
+			cname++;
+		}
+
+		*alias = '\0';
+		alias = alias - alias_len;
+
+		if (yii_get_path_of_alias(alias, alias_len, &path, &path_len) == SUCCESS) {
+			zend_file_handle file_handle;
+
+			file_handle.type = ZEND_HANDLE_FILENAME;
+			file_handle.opened_path = NULL;
+			file_handle.free_filename = 0;
+			file_handle.filename = path;
+
+			zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &file_handle);
+
+			return SUCCESS;
+		}
+	} else {
+		zval *enableinc;
+
+		enableinc = zend_read_static_property(yiibase_ce, ZEND_STRL("enableIncludePath"), 0 TSRMLS_CC);
+
+		if (Z_TYPE_P(enableinc) == IS_BOOL && Z_BVAL_P(enableinc)) {
+			zend_file_handle file_handle;
+
+			file_handle.type = ZEND_HANDLE_FILENAME;
+			file_handle.opened_path = NULL;
+			file_handle.free_filename = 0;
+			spprintf(&file_handle.filename, 0, "%s.php", cname);
+
+			zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &file_handle);
+
+			return SUCCESS;
+		}
+
 	}
 
 }
@@ -448,6 +503,10 @@ PHP_METHOD(yiibase, createWebApplication) {
 		return;
 	}
 
+	if (ZEND_NUM_ARGS() == 0) {
+		ZVAL_NULL(config);
+	}
+
 	yii_create_application(return_value, "CWebApplication", 15, config);
 }
 /* }}} */
@@ -459,6 +518,10 @@ PHP_METHOD(yiibase, createConsoleApplication) {
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|z", &config) == FAILURE) {
 		return;
+	}
+
+	if (ZEND_NUM_ARGS() == 0) {
+		ZVAL_NULL(config);
 	}
 
 	yii_create_application(return_value, "CConsoleApplication", 19, config);
