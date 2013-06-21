@@ -291,9 +291,7 @@ int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC) {
 		}
 	}
 
-	char *find;
-
-	if (php_memnstr(cname, "\\", 1, cname + cname_len)) {
+	if (strstr(cname, "\\")) {
 		char *path, *alias;
 		uint path_len, alias_len = 0;
 
