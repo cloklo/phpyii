@@ -22,6 +22,9 @@
 #define yii_import(alias, alias_len, force, result) \
 	yiibase_import((alias), (alias_len), (force), (result) ZEND_FILE_LINE_CC TSRMLS_CC)
 
+#define yii_execute_scripts(path, type) \
+	yiibase_execute_scripts((path), (type) ZEND_FILE_LINE_CC TSRMLS_CC)
+
 #define yii_get_framework_path() \
 	yiibase_get_framework_path(ZEND_FILE_LINE_CC TSRMLS_CC)
 

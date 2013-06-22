@@ -60,20 +60,20 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(yiibase_getframeworkpath_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(yiibase_createcomponent_arginfo, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(yiibase_createcomponent_arginfo, 0, 0, 1)
 	ZEND_ARG_INFO(0, config)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(yiibase_import_arginfo, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(yiibase_import_arginfo, 0, 0, 1)
 	ZEND_ARG_INFO(0, alias)
 	ZEND_ARG_INFO(0, forceInclude)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(yiibase_getpathofalias_arginfo, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(yiibase_getpathofalias_arginfo, 0, 0, 1)
 	ZEND_ARG_INFO(0, alias)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(yiibase_setpathofalias_arginfo, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(yiibase_setpathofalias_arginfo, 0, 0, 2)
 	ZEND_ARG_INFO(0, alias)
 	ZEND_ARG_INFO(0, path)
 ZEND_END_ARG_INFO()
@@ -98,7 +98,7 @@ ZEND_BEGIN_ARG_INFO_EX(yiibase_beginprofile_arginfo, 0, 0, 1)
 	ZEND_ARG_INFO(0, category)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(yiibase_endprofile_arginfo, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(yiibase_endprofile_arginfo, 0, 0, 1)
 	ZEND_ARG_INFO(0, token)
 	ZEND_ARG_INFO(0, category)
 ZEND_END_ARG_INFO()
@@ -106,20 +106,39 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(yiibase_getlogger_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(yiibase_setlogger_arginfo, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(yiibase_setlogger_arginfo, 0, 0, 1)
 	ZEND_ARG_INFO(0, logger)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(yiibase_powered_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(yiibase_t_arginfo, 0, 0, 0)
-	ZEND_ARG_INFO(0, className)
+ZEND_BEGIN_ARG_INFO_EX(yiibase_t_arginfo, 0, 0, 2)
+	ZEND_ARG_INFO(0, category)
+	ZEND_ARG_INFO(0, message)
+	ZEND_ARG_INFO(0, params)
+	ZEND_ARG_INFO(0, source)
+	ZEND_ARG_INFO(0, language)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(yiibase_registerautoloader_arginfo, 0, 0, 0)
-	ZEND_ARG_INFO(0, className)
+ZEND_BEGIN_ARG_INFO_EX(yiibase_registerautoloader_arginfo, 0, 0, 1)
+	ZEND_ARG_INFO(0, callback)
+	ZEND_ARG_INFO(0, append)
 ZEND_END_ARG_INFO()
+/* }}} */
+
+/** {{{ int yiibase_execute_scripts(char *path, int type ZEND_FILE_LINE_DC TSRMLS_DC)
+ * */
+int yiibase_execute_scripts(char *path, int type ZEND_FILE_LINE_DC TSRMLS_DC) {
+	zend_file_handle file_handle;
+
+	file_handle.type = ZEND_HANDLE_FILENAME;
+	file_handle.opened_path = NULL;
+	file_handle.free_filename = 0;
+	file_handle.filename = path;
+
+	return zend_execute_scripts(type TSRMLS_CC, NULL, 1, &file_handle);
+}
 /* }}} */
 
 /** {{{ int yiibase_object_init_ex(zval *obj, zend_class_entry *ce, int argc, zval **argv ZEND_FILE_LINE_DC TSRMLS_DC)
@@ -246,6 +265,7 @@ char *yiibase_get_framework_path(ZEND_FILE_LINE_DC TSRMLS_DC) {
 /** {{{ int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC)
 */
 int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC) {
+	char *filepath;
 	zval *classmap;
 	zval *coreclasses;
 
@@ -257,14 +277,7 @@ int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC) {
 		if (zend_hash_find(Z_ARRVAL_P(classmap), cname, cname_len+1, (void**)&ppzval) == SUCCESS) {
 			convert_to_string_ex(ppzval);
 
-			zend_file_handle file_handle;
-
-			file_handle.type = ZEND_HANDLE_FILENAME;
-			file_handle.opened_path = NULL;
-			file_handle.free_filename = 0;
-			file_handle.filename = Z_STRVAL_PP(ppzval);
-
-			zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &file_handle);
+			yii_execute_scripts(Z_STRVAL_PP(ppzval), ZEND_INCLUDE);
 
 			return SUCCESS;
 		}
@@ -278,21 +291,16 @@ int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC) {
 		if (zend_hash_find(Z_ARRVAL_P(coreclasses), cname, cname_len+1, (void**)&ppzval) == SUCCESS) {
 			convert_to_string_ex(ppzval);
 
-			zend_file_handle file_handle;
+			spprintf(&filepath, 0, "%s%s",  yii_get_framework_path(), Z_STRVAL_PP(ppzval));
 
-			file_handle.type = ZEND_HANDLE_FILENAME;
-			file_handle.opened_path = NULL;
-			file_handle.free_filename = 0;
-			spprintf(&file_handle.filename, 0, "%s%s",  yii_get_framework_path(), Z_STRVAL_PP(ppzval));
-
-			zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &file_handle);
+			yii_execute_scripts(filepath, ZEND_INCLUDE);
 
 			return SUCCESS;
 		}
 	}
 
 	if (strstr(cname, "\\")) {
-		char *path, *alias;
+		char *alias;
 		uint path_len, alias_len = 0;
 
 		while (*cname == '\\') {
@@ -313,15 +321,9 @@ int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC) {
 		*alias = '\0';
 		alias = alias - alias_len;
 
-		if (yii_get_path_of_alias(alias, alias_len, &path, &path_len) == SUCCESS) {
-			zend_file_handle file_handle;
+		if (yii_get_path_of_alias(alias, alias_len, &filepath, &path_len) == SUCCESS) {
 
-			file_handle.type = ZEND_HANDLE_FILENAME;
-			file_handle.opened_path = NULL;
-			file_handle.free_filename = 0;
-			file_handle.filename = path;
-
-			zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &file_handle);
+			yii_execute_scripts(filepath, ZEND_INCLUDE);
 
 			return SUCCESS;
 		}
@@ -331,19 +333,41 @@ int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC) {
 		enableinc = zend_read_static_property(yiibase_ce, ZEND_STRL("enableIncludePath"), 0 TSRMLS_CC);
 
 		if (Z_TYPE_P(enableinc) == IS_BOOL && Z_BVAL_P(enableinc)) {
-			zend_file_handle file_handle;
+			spprintf(&filepath, 0, "%s.php", cname);
 
-			file_handle.type = ZEND_HANDLE_FILENAME;
-			file_handle.opened_path = NULL;
-			file_handle.free_filename = 0;
-			spprintf(&file_handle.filename, 0, "%s.php", cname);
-
-			zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &file_handle);
+			yii_execute_scripts(filepath, ZEND_INCLUDE);
 
 			return SUCCESS;
+		} else {
+			zval *incpaths;
+
+			incpaths = zend_read_static_property(yiibase_ce, ZEND_STRL("_includePath"), 0 TSRMLS_CC);
+
+			if (Z_TYPE_P(incpaths) == IS_ARRAY) {
+				zval **ppzval;
+				char *str_key;
+				uint str_key_len;
+				ulong num_key;
+				HashPosition pos;
+
+				zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(incpaths), &pos);
+				while (zend_hash_get_current_data_ex(Z_ARRVAL_P(incpaths), (void**)&ppzval, &pos) == SUCCESS) {
+					spprintf(&filepath, 0, "%s/%s.php", Z_STRVAL_PP(ppzval), cname);
+
+					if (VCWD_ACCESS(filepath, F_OK) == 0) {
+						yii_execute_scripts(filepath, ZEND_INCLUDE);
+
+						return SUCCESS;
+					}
+					zend_hash_move_forward_ex(Z_ARRVAL_P(incpaths), &pos);
+				}
+			}
+
 		}
 
 	}
+
+	return FAILURE;
 
 }
 /* }}} */
