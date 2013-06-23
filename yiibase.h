@@ -19,8 +19,8 @@
 #ifndef PHP_YIIBASE_H
 #define PHP_YIIBASE_H
 
-#define yii_import(alias, alias_len, force, result) \
-	yiibase_import((alias), (alias_len), (force), (result) ZEND_FILE_LINE_CC TSRMLS_CC)
+#define yii_import(alias, alias_len, force, cname) \
+	yiibase_import((alias), (alias_len), (force), (cname) ZEND_FILE_LINE_CC TSRMLS_CC)
 
 #define yii_execute_scripts(path, type) \
 	yiibase_execute_scripts((path), (type) ZEND_FILE_LINE_CC TSRMLS_CC)
