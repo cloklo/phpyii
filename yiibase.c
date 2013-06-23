@@ -374,8 +374,11 @@ int yiibase_autoload(char *cname, uint cname_len ZEND_FILE_LINE_DC TSRMLS_DC) {
 
 /** {{{ char *yiibase_import(char *alias, int alias_len, char force, zval *result ZEND_FILE_LINE_DC TSRMLS_DC)
  * */
-char *yiibase_import(char *alias, int alias_len, char force, zval *result ZEND_FILE_LINE_DC TSRMLS_DC) {
-
+char *yiibase_import(char *alias, int alias_len, char force, zend_class_entry ***ce ZEND_FILE_LINE_DC TSRMLS_DC) {
+	if (zend_lookup_class(alias, alias_len, ce TSRMLS_CC) == FAILURE) {
+		php_error_docref(NULL TSRMLS_CC, E_ERROR, "Alias %s does not exist", alias);
+		return FAILURE;
+	}
 }
 /* }}} */
 
@@ -419,22 +422,16 @@ int yiibase_create_component(zval *result, zval *config, int argc, zval ***argv 
 		zend_throw_exception(zend_exception_get_default(TSRMLS_C), "Object configuration must be an array containing a \"class\" element.", E_ERROR TSRMLS_CC);
 	}
 
-	zend_class_entry **ce;
-	uint ltype_len = Z_STRLEN_P(ptype);
-	char *ltype = zend_str_tolower_dup(Z_STRVAL_P(ptype), ltype_len);
-
-	if (zend_hash_find(EG(class_table), ltype, ltype_len+1, (void **) &ce) == FAILURE) {
-		yii_import(Z_STRVAL_P(ptype), Z_STRLEN_P(ptype), 0, ptype);
+	if (zend_lookup_class_ex(Z_STRVAL_P(ptype), Z_STRLEN_P(ptype), 0, &pce TSRMLS_CC) == FAILURE) {
+		if (yii_import(Z_STRVAL_P(ptype), Z_STRLEN_P(ptype), 1, &pce) == FAILURE) {
+			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Class %s does not exist", Z_STRVAL_P(ptype));
+			return FAILURE;
+		}
 	}
-	efree(ltype);
 
 	zend_class_entry **pce = NULL;
 
 	if (argc < 5) {
-		if (zend_lookup_class(Z_STRVAL_P(ptype), Z_STRLEN_P(ptype), &pce TSRMLS_CC) == FAILURE) {
-			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Class %s does not exist", Z_STRVAL_P(ptype));
-			return FAILURE;
-		}
 		object_init_ex(result, *pce);
 
 		if (zend_hash_exists(&(*pce)->function_table, ZEND_STRS(ZEND_CONSTRUCTOR_FUNC_NAME))) {
