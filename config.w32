@@ -4,7 +4,7 @@
 ARG_ENABLE("yii", "enable yii framework support", "no");
 
 if (PHP_YII == "yes") {
-	EXTENSION("yii", "yii.c yiibase.c");
+	EXTENSION("yii", "yii.c yiibase.c base/cexception.c");
 
 	AC_DEFINE("HAVE_YII", 1, "Have Yii Framework Support");
 }

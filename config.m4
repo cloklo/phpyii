@@ -53,7 +53,7 @@ if test "$PHP_YII" != "no"; then
     AC_MSG_RESULT([$php_version, ok])
   fi
 
-  ext_files="yii.c yiibase.c"
+  ext_files="yii.c yiibase.c base/cexception.c"
 
   if test "$PHP_YII_GII" = "yes"; then
     ext_files=$ext_files" gii/gii.c"

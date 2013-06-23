@@ -28,6 +28,7 @@
 #include "ext/standard/php_string.h"
 
 #include "php_yii.h"
+#include "cexception.h"
 #include "yiibase.h"
 
 zend_class_entry *yiibase_ce;
@@ -443,7 +444,7 @@ int yiibase_import(char *alias, int alias_len, char force, char **cname ZEND_FIL
 
 				} else {
 					// TODO
-					zend_throw_exception(zend_exception_get_default(TSRMLS_C), "Alias \"{alias}\" is invalid. Make sure it points to an existing PHP file and the file is readable.", E_ERROR TSRMLS_CC);
+					zend_throw_exception(cexception_ce, "Alias \"{alias}\" is invalid. Make sure it points to an existing PHP file and the file is readable.", E_ERROR TSRMLS_CC);
 				}
 
 				add_assoc_stringl(imports, alias, alias, alias_len, 1);
@@ -511,7 +512,7 @@ int yiibase_create_component(zval *result, zval *config, int argc, zval ***argv 
 		zend_hash_del(Z_ARRVAL_P(config), "class", 6);
 	} else {
 		// TODO
-		zend_throw_exception(zend_exception_get_default(TSRMLS_C), "Object configuration must be an array containing a \"class\" element.", E_ERROR TSRMLS_CC);
+		zend_throw_exception(cexception_ce, "Object configuration must be an array containing a \"class\" element.", E_ERROR TSRMLS_CC);
 	}
 
 	if (zend_lookup_class_ex(Z_STRVAL_P(ptype), Z_STRLEN_P(ptype), 0, &pce TSRMLS_CC) == FAILURE) {
@@ -689,7 +690,7 @@ PHP_METHOD(yiibase, setApplication) {
 		zend_update_static_property(yiibase_ce, ZEND_STRL("_app"), zapp TSRMLS_CC);
 	} else {
 		// TODO
-		zend_throw_exception(zend_exception_get_default(TSRMLS_C), "Yii application can only be created once.", E_ERROR TSRMLS_CC);
+		zend_throw_exception(cexception_ce, "Yii application can only be created once.", E_ERROR TSRMLS_CC);
 	}
 }
 /* }}} */
