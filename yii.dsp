@@ -156,65 +156,12 @@ SOURCE=.\yii.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\yii_application.c
+SOURCE=.\yiibase.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\yii_loader.c
+SOURCE=.\base\cexception.c
 # End Source File
-# Begin Source File
-
-SOURCE=.\yii_dispatcher.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_bootstrap.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_config.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_registry.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_controller.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_action.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_view.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_request.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_response.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_router.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_exception.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_plugin.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_session.c
-# End Source File
-
 # End Group
 # Begin Group "Yii Header Files"
 
@@ -225,51 +172,11 @@ SOURCE=.\php_yii.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\yii_application.h
+SOURCE=.\yiibase.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\yii_bootstrap.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_loader.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_config.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_registry.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_controller.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_view.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\php_request.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_router.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_exception.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_plugin.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\yii_session.h
+SOURCE=.\base\cexception.h
 # End Source File
 # End Group
 # End Target
