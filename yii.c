@@ -33,6 +33,7 @@
 
 #include "php_yii.h"
 #include "yiibase.h"
+#include "base/cexception.h"
 
 #define MICRO_IN_SEC 1000000.00
 
@@ -78,6 +79,7 @@ PHP_MINIT_FUNCTION(yii)
 
 	/* startup components */
 	PHP_MINIT(yiibase)(INIT_FUNC_ARGS_PASSTHRU);
+	PHP_MINIT(cexception)(INIT_FUNC_ARGS_PASSTHRU);
 
 	zend_class_entry ce;
 	INIT_CLASS_ENTRY(ce, "Yii", yii_methods);

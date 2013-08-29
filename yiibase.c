@@ -28,8 +28,8 @@
 #include "ext/standard/php_string.h"
 
 #include "php_yii.h"
-#include "cexception.h"
 #include "yiibase.h"
+#include "base/cexception.h"
 
 zend_class_entry *yiibase_ce;
 
